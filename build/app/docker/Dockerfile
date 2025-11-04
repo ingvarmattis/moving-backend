@@ -7,13 +7,13 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o example-service ./cmd/main.go
+RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o moving-service ./cmd/main.go
 
 FROM alpine:3.21 AS runner
 
 WORKDIR /app
-COPY --from=builder /app/example-service .
+COPY --from=builder /app/moving-service .
 
 EXPOSE 8000
 
-ENTRYPOINT ["./example-service"]
+ENTRYPOINT ["./moving-service"]

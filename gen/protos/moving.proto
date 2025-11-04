@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package ingvarmattis.services.moving.v1;
+
+option go_package = "./gen/servergrpc/moving;servergrpc";
+
+import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
+import "params/create_order.proto";
+import "params/get_order.proto";
+
+service MovingService {
+  rpc CreateOrder(CreateOrderRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/v1/orders/create"
+      body: "*"
+    };
+  }
+
+  rpc GetOrders(google.protobuf.Empty) returns (GetOrderResponse) {
+    option (google.api.http) = {
+      get: "/v1/orders/get"
+    };
+  }
+}

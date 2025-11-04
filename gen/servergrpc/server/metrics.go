@@ -9,8 +9,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
 
-	"github.com/ingvarmattis/example/src/box"
-	"github.com/ingvarmattis/example/src/log"
+	"github.com/ingvarmattis/moving/src/box"
+	"github.com/ingvarmattis/moving/src/log"
 )
 
 type MetricsServer struct {

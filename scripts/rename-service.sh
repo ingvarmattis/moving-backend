@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # === Настройки ===
-OLD_SERVICE_NAME="example-service"
+OLD_SERVICE_NAME="moving-service"
 NEW_SERVICE_NAME="go-auth"
 
-OLD_SCHEMA_NAME="example"
+OLD_SCHEMA_NAME="moving"
 NEW_SCHEMA_NAME="auth"
 
 USE_POSTGRES_DB=true  # false if you will not user a postgres db

@@ -1,14 +1,7 @@
 package services
 
-import (
-	"context"
-)
-
 type SvcLayer struct {
-	ExampleService ExampleService
+	MovingService MovingService
 }
 
-type ExampleService interface {
-	ServiceName(ctx context.Context) (string, error)
-	Exists(ctx context.Context, serviceName string) (bool, error)
-}
+type MovingService interface{}

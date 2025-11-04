@@ -21,8 +21,8 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 
-	exampleGRPC "github.com/ingvarmattis/example/gen/servergrpc/example"
-	"github.com/ingvarmattis/example/src/log"
+	rpc "github.com/ingvarmattis/moving/gen/servergrpc/moving"
+	"github.com/ingvarmattis/moving/src/log"
 )
 
 const domain = "mattis.dev"
@@ -30,8 +30,8 @@ const domain = "mattis.dev"
 var ErrPortNotSpecified = errors.New("port not specified")
 
 type GRPCExampleHandlers interface {
-	ServiceName(ctx context.Context, in *emptypb.Empty) (*exampleGRPC.ServiceNameResponse, error)
-	Status(ctx context.Context, in *exampleGRPC.StatusRequest) (*exampleGRPC.StatusResponse, error)
+	CreateOrder(ctx context.Context, order *rpc.CreateOrderRequest) (*emptypb.Empty, error)
+	GetOrder(ctx context.Context, _ *emptypb.Empty) (*rpc.GetOrderResponse, error)
 }
 
 type GRPCErrors interface {
@@ -39,9 +39,9 @@ type GRPCErrors interface {
 }
 
 type Server struct {
-	exampleGRPC.UnimplementedExampleServiceServer
+	rpc.UnimplementedMovingServiceServer
 
-	GRPCExampleHandlers GRPCExampleHandlers
+	GRPCMovingHandlers GRPCExampleHandlers
 
 	Validator *validator.Validate
 	Logger    *log.Zap
@@ -153,9 +153,9 @@ func NewServer(ctx context.Context, grpcPort int, opts *NewServerOptions) *Serve
 	}
 
 	s := Server{
-		UnimplementedExampleServiceServer: exampleGRPC.UnimplementedExampleServiceServer{},
+		UnimplementedMovingServiceServer: rpc.UnimplementedMovingServiceServer{},
 
-		GRPCExampleHandlers: opts.GRPCExampleHandlers,
+		GRPCMovingHandlers: opts.GRPCExampleHandlers,
 
 		Validator: opts.Validator,
 		Logger:    opts.Logger,
@@ -163,11 +163,11 @@ func NewServer(ctx context.Context, grpcPort int, opts *NewServerOptions) *Serve
 		grpcServer: grpcServer,
 		httpServer: httpServer,
 	}
-	exampleGRPC.RegisterExampleServiceServer(grpcServer, &s)
+	rpc.RegisterMovingServiceServer(grpcServer, &s)
 
 	httpOpts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 
-	if err := exampleGRPC.RegisterExampleServiceHandlerFromEndpoint(
+	if err := rpc.RegisterMovingServiceHandlerFromEndpoint(
 		ctx, httpServer, fmt.Sprintf("0.0.0.0:%v", grpcPort), httpOpts,
 	); err != nil {
 		panic(err)
@@ -178,8 +178,8 @@ func NewServer(ctx context.Context, grpcPort int, opts *NewServerOptions) *Serve
 	return &s
 }
 
-func (s *Server) ServiceName(ctx context.Context, req *emptypb.Empty) (*exampleGRPC.ServiceNameResponse, error) {
-	resp, err := s.GRPCExampleHandlers.ServiceName(ctx, req)
+func (s *Server) CreateOrder(ctx context.Context, req *rpc.CreateOrderRequest) (*emptypb.Empty, error) {
+	resp, err := s.GRPCMovingHandlers.CreateOrder(ctx, req)
 	if err != nil {
 		return nil, GRPCUnknownError(err, nil)
 	}
@@ -187,20 +187,8 @@ func (s *Server) ServiceName(ctx context.Context, req *emptypb.Empty) (*exampleG
 	return resp, nil
 }
 
-type statusT struct {
-	ServiceName string `validate:"required,serviceName"`
-}
-
-func (s *Server) Status(ctx context.Context, req *exampleGRPC.StatusRequest) (*exampleGRPC.StatusResponse, error) {
-	reqT := statusT{
-		ServiceName: req.GetServiceName(),
-	}
-
-	if err := validate(s.Validator, reqT, errors.New("status error")); err != nil {
-		return nil, err
-	}
-
-	resp, err := s.GRPCExampleHandlers.Status(ctx, req)
+func (s *Server) GetOrder(ctx context.Context, _ *emptypb.Empty) (*rpc.GetOrderResponse, error) {
+	resp, err := s.GRPCMovingHandlers.GetOrder(ctx, nil)
 	if err != nil {
 		return nil, GRPCUnknownError(err, nil)
 	}

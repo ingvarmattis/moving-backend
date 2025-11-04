@@ -53,4 +53,4 @@ benchmark-tests:
 
 #Build
 build-application:
-	docker build -t example -f ./build/app/docker/Dockerfile .
+	docker build -t moving -f ./build/app/docker/Dockerfile .

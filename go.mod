@@ -1,4 +1,4 @@
-module github.com/ingvarmattis/example
+module github.com/ingvarmattis/moving
 
 go 1.24.0
 

@@ -14,11 +14,11 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/ingvarmattis/example/gen/servergrpc/server"
-	"github.com/ingvarmattis/example/src/box"
-	"github.com/ingvarmattis/example/src/log"
-	exampleRPC "github.com/ingvarmattis/example/src/rpctransport/example"
-	"github.com/ingvarmattis/example/src/services"
+	"github.com/ingvarmattis/moving/gen/servergrpc/server"
+	"github.com/ingvarmattis/moving/src/box"
+	"github.com/ingvarmattis/moving/src/log"
+	rpc "github.com/ingvarmattis/moving/src/rpctransport/moving"
+	"github.com/ingvarmattis/moving/src/services"
 )
 
 func main() {
@@ -39,8 +39,8 @@ func main() {
 		envBox.Config.GRPCServerListenPort,
 		&server.NewServerOptions{
 			ServiceName: envBox.Config.ServiceName,
-			GRPCExampleHandlers: &exampleRPC.Handlers{
-				Service: services.SvcLayer{ExampleService: resources.ExampleService},
+			GRPCExampleHandlers: &rpc.Handlers{
+				Service: services.SvcLayer{MovingService: resources.MovingService},
 			},
 			Validator:          resources.Validator,
 			Logger:             envBox.Logger,

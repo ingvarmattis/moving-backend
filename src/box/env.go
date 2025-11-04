@@ -15,8 +15,8 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc/credentials"
 
-	"github.com/ingvarmattis/example/src/config"
-	"github.com/ingvarmattis/example/src/log"
+	"github.com/ingvarmattis/moving/src/config"
+	"github.com/ingvarmattis/moving/src/log"
 )
 
 const NotOperational = "noop"
@@ -38,7 +38,7 @@ func NewENV(ctx context.Context) (*Env, error) {
 		return nil, fmt.Errorf("cannot provide config | %w", err)
 	}
 
-	pgPool, err := providePGXPool(ctx, cfg.PostgresConfig.URL)
+	pgPool, err := providePGXPool(ctx, cfg.PostgresConfig.ConnectionConfig)
 	if err != nil {
 		return nil, fmt.Errorf("error creating postgres connection | %w", err)
 	}

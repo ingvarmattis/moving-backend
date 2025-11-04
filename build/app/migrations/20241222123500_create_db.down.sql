@@ -1,6 +1,6 @@
 begin;
 
-drop table  if exists example.services;
-drop schema if exists example;
+drop table  if exists moving.orders;
+drop schema if exists moving;
 
 end;

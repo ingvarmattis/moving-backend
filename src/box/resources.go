@@ -7,14 +7,14 @@ import (
 	"github.com/go-playground/validator/v10"
 	"google.golang.org/grpc"
 
-	"github.com/ingvarmattis/example/src/interceptors"
-	exampleRepo "github.com/ingvarmattis/example/src/repositories/example"
-	"github.com/ingvarmattis/example/src/rpctransport"
-	exampleSvc "github.com/ingvarmattis/example/src/services/example"
+	"github.com/ingvarmattis/moving/src/interceptors"
+	movingRepo "github.com/ingvarmattis/moving/src/repositories/moving"
+	"github.com/ingvarmattis/moving/src/rpctransport"
+	movingSvc "github.com/ingvarmattis/moving/src/services/moving"
 )
 
 type Resources struct {
-	ExampleService *exampleSvc.Service
+	MovingService *movingSvc.Service
 
 	Validator *validator.Validate
 
@@ -23,13 +23,13 @@ type Resources struct {
 }
 
 func NewResources(ctx context.Context, envBox *Env) (*Resources, error) {
-	exampleService, err := exampleSvc.NewService(ctx, exampleRepo.NewPostgres(envBox.PGXPool))
+	movingService, err := movingSvc.NewService(ctx, movingRepo.NewPostgres(envBox.PGXPool))
 	if err != nil {
-		return nil, fmt.Errorf("cannot create example service | %w", err)
+		return nil, fmt.Errorf("cannot create moving service | %w", err)
 	}
 
 	return &Resources{
-		ExampleService: exampleService,
+		MovingService: movingService,
 
 		Validator: rpctransport.MustValidate(),
 
