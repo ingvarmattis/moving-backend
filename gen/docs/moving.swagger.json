@@ -23,8 +23,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "type": "object",
-              "properties": {}
+              "$ref": "#/definitions/v1CreateOrderResponse"
             }
           },
           "default": {
@@ -51,12 +50,12 @@
     },
     "/v1/orders/get": {
       "get": {
-        "operationId": "MovingService_GetOrders",
+        "operationId": "MovingService_AllOrders",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1GetOrderResponse"
+              "$ref": "#/definitions/v1AllOrdersResponse"
             }
           },
           "default": {
@@ -66,6 +65,39 @@
             }
           }
         },
+        "tags": [
+          "MovingService"
+        ]
+      }
+    },
+    "/v1/orders/update": {
+      "post": {
+        "operationId": "MovingService_UpdateOrder",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UpdateOrderRequest"
+            }
+          }
+        ],
         "tags": [
           "MovingService"
         ]
@@ -101,36 +133,31 @@
         }
       }
     },
-    "v1CreateOrderRequest": {
+    "v1AllOrdersResponse": {
       "type": "object",
       "properties": {
-        "Name": {
-          "type": "string"
-        },
-        "Email": {
-          "type": "string"
-        },
-        "Phone": {
-          "type": "string"
-        },
-        "MoveDate": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "MoveFrom": {
-          "type": "string"
-        },
-        "MoveTo": {
-          "type": "string"
-        },
-        "PropertySize": {
-          "$ref": "#/definitions/v1PropertySize"
+        "Orders": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Order"
+          }
         }
       }
     },
-    "v1GetOrderResponse": {
+    "v1CreateOrderRequest": {
       "type": "object",
       "properties": {
+        "PropertySize": {
+          "$ref": "#/definitions/v1PropertySize"
+        },
+        "OrderStatus": {
+          "$ref": "#/definitions/v1OrderStatus"
+        },
+        "MoveDate": {
+          "type": "string",
+          "format": "date-time"
+        },
         "Name": {
           "type": "string"
         },
@@ -140,9 +167,50 @@
         "Phone": {
           "type": "string"
         },
+        "MoveFrom": {
+          "type": "string"
+        },
+        "MoveTo": {
+          "type": "string"
+        },
+        "AdditionalInfo": {
+          "type": "string"
+        }
+      }
+    },
+    "v1CreateOrderResponse": {
+      "type": "object",
+      "properties": {
+        "Order": {
+          "$ref": "#/definitions/v1Order"
+        }
+      }
+    },
+    "v1Order": {
+      "type": "object",
+      "properties": {
+        "ID": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "PropertySize": {
+          "$ref": "#/definitions/v1PropertySize"
+        },
+        "OrderStatus": {
+          "$ref": "#/definitions/v1OrderStatus"
+        },
         "MoveDate": {
           "type": "string",
           "format": "date-time"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "Email": {
+          "type": "string"
+        },
+        "Phone": {
+          "type": "string"
         },
         "MoveFrom": {
           "type": "string"
@@ -150,14 +218,26 @@
         "MoveTo": {
           "type": "string"
         },
-        "PropertySize": {
-          "$ref": "#/definitions/v1PropertySize"
+        "AdditionalInfo": {
+          "type": "string"
         }
       }
+    },
+    "v1OrderStatus": {
+      "type": "string",
+      "enum": [
+        "ORDER_STATUS_UNKNOWN",
+        "ORDER_STATUS_CREATED",
+        "ORDER_STATUS_REJECTED",
+        "ORDER_STATUS_IN_PROGRESS",
+        "ORDER_STATUS_DONE"
+      ],
+      "default": "ORDER_STATUS_UNKNOWN"
     },
     "v1PropertySize": {
       "type": "string",
       "enum": [
+        "PROPERTY_SIZE_UNKNOWN",
         "PROPERTY_SIZE_STUDIO",
         "PROPERTY_SIZE_1_BEDROOM",
         "PROPERTY_SIZE_2_BEDROOMS",
@@ -165,7 +245,44 @@
         "PROPERTY_SIZE_4_PLUS_BEDROOMS",
         "PROPERTY_SIZE_COMMERCIAL"
       ],
-      "default": "PROPERTY_SIZE_STUDIO"
+      "default": "PROPERTY_SIZE_UNKNOWN"
+    },
+    "v1UpdateOrderRequest": {
+      "type": "object",
+      "properties": {
+        "ID": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "PropertySize": {
+          "$ref": "#/definitions/v1PropertySize"
+        },
+        "OrderStatus": {
+          "$ref": "#/definitions/v1OrderStatus"
+        },
+        "MoveDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "Email": {
+          "type": "string"
+        },
+        "Phone": {
+          "type": "string"
+        },
+        "MoveFrom": {
+          "type": "string"
+        },
+        "MoveTo": {
+          "type": "string"
+        },
+        "AdditionalInfo": {
+          "type": "string"
+        }
+      }
     }
   }
 }

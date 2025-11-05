@@ -2,13 +2,12 @@ package interceptors
 
 import (
 	"context"
+	"github.com/ingvarmattis/moving/src/infra/log"
 	"runtime/debug"
 	"strings"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"google.golang.org/grpc"
-
-	"github.com/ingvarmattis/moving/src/log"
 )
 
 func UnaryServerPanicsInterceptor(logger *log.Zap, serviceName string) grpc.UnaryServerInterceptor {

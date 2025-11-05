@@ -2,21 +2,20 @@ package interceptors
 
 import (
 	"context"
+	"github.com/ingvarmattis/moving/src/infra/log"
 	"time"
 
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/status"
-
-	"github.com/ingvarmattis/moving/src/log"
 )
 
 func UnaryServerLogInterceptor(logger *log.Zap, debugMode bool) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		startTime := time.Now()
 
-		traceID := trace.SpanFromContext(ctx).SpanContext().TraceID().String()
+		traceID := trace.SpanFromContext(ctx).SpanContext().TraceID()
 
 		resp, err := handler(ctx, req)
 
@@ -24,9 +23,12 @@ func UnaryServerLogInterceptor(logger *log.Zap, debugMode bool) grpc.UnaryServer
 
 		fields := []zap.Field{
 			zap.String("method", info.FullMethod),
-			zap.String("traceID", traceID),
 			zap.Duration("duration", executionDuration),
 			zap.String("status", status.Code(err).String()),
+		}
+
+		if traceID.IsValid() {
+			fields = append(fields, zap.String("traceID", traceID.String()))
 		}
 
 		if debugMode {

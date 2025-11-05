@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package ingvarmattis.services.moving.v1;
+
+option go_package = "./gen/servergrpc/moving;servergrpc";
+
+import "params/order.proto";
+
+message AllOrdersResponse {
+  repeated Order Orders = 1;
+}

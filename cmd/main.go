@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	box2 "github.com/ingvarmattis/moving/src/infra/box"
+	"github.com/ingvarmattis/moving/src/infra/log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -15,8 +17,6 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/ingvarmattis/moving/gen/servergrpc/server"
-	"github.com/ingvarmattis/moving/src/box"
-	"github.com/ingvarmattis/moving/src/log"
 	rpc "github.com/ingvarmattis/moving/src/rpctransport/moving"
 	"github.com/ingvarmattis/moving/src/services"
 )
@@ -24,29 +24,27 @@ import (
 func main() {
 	serverCTX, serverCancel := context.WithCancel(context.Background())
 
-	envBox, err := box.NewENV(serverCTX)
+	envBox, err := box2.NewENV(serverCTX)
 	if err != nil {
 		panic(err)
 	}
 
-	resources, err := box.NewResources(serverCTX, envBox)
-	if err != nil {
-		panic(err)
-	}
+	resources := box2.NewResources(envBox)
 
 	grpcCompetitorsServer := server.NewServer(
 		serverCTX,
 		envBox.Config.GRPCServerListenPort,
 		&server.NewServerOptions{
 			ServiceName: envBox.Config.ServiceName,
-			GRPCExampleHandlers: &rpc.Handlers{
+			GRPCHandlers: &rpc.Handlers{
 				Service: services.SvcLayer{MovingService: resources.MovingService},
 			},
 			Validator:          resources.Validator,
 			Logger:             envBox.Logger,
-			UnaryInterceptors:  resources.UnaryServerInterceptors,
-			StreamInterceptors: resources.StreamServerInterceptors,
-		})
+			UnaryInterceptors:  resources.UnaryGRPCServerInterceptors,
+			StreamInterceptors: resources.StreamGRPCServerInterceptors,
+		},
+	)
 
 	metricsServer := server.NewMetricsServer(
 		envBox.Config.MetricsConfig.Enabled, envBox.Logger, envBox.Config.MetricsConfig.Port)
@@ -72,7 +70,7 @@ func main() {
 			return nil
 		},
 		func() error {
-			if metricsServer.Name() == box.NotOperational {
+			if metricsServer.Name() == box2.NotOperational {
 				return nil
 			}
 
@@ -141,7 +139,7 @@ func gracefullShutdown(
 		},
 		func() {
 			defer shutdownWG.Done()
-			if metricsServerHTTP.Name() == box.NotOperational {
+			if metricsServerHTTP.Name() == box2.NotOperational {
 				return
 			}
 

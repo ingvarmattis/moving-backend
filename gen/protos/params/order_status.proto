@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package ingvarmattis.services.moving.v1;
+
+option go_package = "./gen/servergrpc/moving;servergrpc";
+
+enum OrderStatus {
+  ORDER_STATUS_UNKNOWN = 0;
+  ORDER_STATUS_CREATED = 1;
+  ORDER_STATUS_REJECTED = 2;
+  ORDER_STATUS_IN_PROGRESS = 3;
+  ORDER_STATUS_DONE = 4;
+}

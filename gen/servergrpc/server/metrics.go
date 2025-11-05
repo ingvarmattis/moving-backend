@@ -2,15 +2,14 @@ package server
 
 import (
 	"fmt"
+	"github.com/ingvarmattis/moving/src/infra/box"
+	"github.com/ingvarmattis/moving/src/infra/log"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
-
-	"github.com/ingvarmattis/moving/src/box"
-	"github.com/ingvarmattis/moving/src/log"
 )
 
 type MetricsServer struct {

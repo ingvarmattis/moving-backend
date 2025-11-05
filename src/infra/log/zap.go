@@ -10,6 +10,11 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+type Arg struct {
+	Key   string
+	Value string
+}
+
 type Zap struct {
 	logger *zap.Logger
 }
@@ -45,10 +50,10 @@ func (z *Zap) Error(msg string, args ...zap.Field) {
 	z.logger.Error(msg, args...)
 }
 
-func (z *Zap) With(args ...string) *Zap {
+func (z *Zap) With(args ...Arg) *Zap {
 	zapArgs := make([]zap.Field, 0, len(args))
 	for _, arg := range args {
-		zapArgs = append(zapArgs, zap.String("", arg))
+		zapArgs = append(zapArgs, zap.String(arg.Key, arg.Value))
 	}
 
 	return &Zap{

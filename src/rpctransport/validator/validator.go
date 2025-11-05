@@ -1,4 +1,4 @@
-package rpctransport
+package validator
 
 import (
 	"fmt"
@@ -23,10 +23,4 @@ func MustValidate() *validator.Validate {
 	}
 
 	return validate
-}
-
-func validateServiceName(fl validator.FieldLevel) bool {
-	serviceName := fl.Field().String()
-
-	return len(serviceName) != 0
 }

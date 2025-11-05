@@ -3,6 +3,8 @@ package box
 import (
 	"context"
 	"fmt"
+	"github.com/ingvarmattis/moving/src/infra/config"
+	"github.com/ingvarmattis/moving/src/infra/log"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -14,9 +16,6 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc/credentials"
-
-	"github.com/ingvarmattis/moving/src/config"
-	"github.com/ingvarmattis/moving/src/log"
 )
 
 const NotOperational = "noop"

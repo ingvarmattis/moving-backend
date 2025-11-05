@@ -20,18 +20,25 @@ import (
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	rpc "github.com/ingvarmattis/moving/gen/servergrpc/moving"
-	"github.com/ingvarmattis/moving/src/log"
+	"github.com/ingvarmattis/moving/src/infra/log"
+	"github.com/ingvarmattis/moving/src/infra/utils"
+	rpctransport "github.com/ingvarmattis/moving/src/rpctransport/moving"
 )
 
 const domain = "mattis.dev"
 
-var ErrPortNotSpecified = errors.New("port not specified")
+var (
+	ErrPortNotSpecified = errors.New("port not specified")
+	ErrValidationFailed = errors.New("validation failed")
+)
 
-type GRPCExampleHandlers interface {
-	CreateOrder(ctx context.Context, order *rpc.CreateOrderRequest) (*emptypb.Empty, error)
-	GetOrder(ctx context.Context, _ *emptypb.Empty) (*rpc.GetOrderResponse, error)
+type GRPCHandlers interface {
+	CreateOrder(ctx context.Context, req *rpctransport.CreateOrderRequest) (*rpctransport.Order, error)
+	AllOrders(ctx context.Context) ([]*rpctransport.Order, error)
+	UpdateOrder(ctx context.Context, req *rpctransport.UpdateOrderRequest) error
 }
 
 type GRPCErrors interface {
@@ -41,7 +48,7 @@ type GRPCErrors interface {
 type Server struct {
 	rpc.UnimplementedMovingServiceServer
 
-	GRPCMovingHandlers GRPCExampleHandlers
+	GRPCMovingHandlers GRPCHandlers
 
 	Validator *validator.Validate
 	Logger    *log.Zap
@@ -124,7 +131,7 @@ func (s *Server) Close() {
 type NewServerOptions struct {
 	ServiceName string
 
-	GRPCExampleHandlers GRPCExampleHandlers
+	GRPCHandlers GRPCHandlers
 
 	Logger    *log.Zap
 	Validator *validator.Validate
@@ -155,7 +162,7 @@ func NewServer(ctx context.Context, grpcPort int, opts *NewServerOptions) *Serve
 	s := Server{
 		UnimplementedMovingServiceServer: rpc.UnimplementedMovingServiceServer{},
 
-		GRPCMovingHandlers: opts.GRPCExampleHandlers,
+		GRPCMovingHandlers: opts.GRPCHandlers,
 
 		Validator: opts.Validator,
 		Logger:    opts.Logger,
@@ -178,22 +185,92 @@ func NewServer(ctx context.Context, grpcPort int, opts *NewServerOptions) *Serve
 	return &s
 }
 
-func (s *Server) CreateOrder(ctx context.Context, req *rpc.CreateOrderRequest) (*emptypb.Empty, error) {
-	resp, err := s.GRPCMovingHandlers.CreateOrder(ctx, req)
+func (s *Server) CreateOrder(ctx context.Context, req *rpc.CreateOrderRequest) (*rpc.CreateOrderResponse, error) {
+	rpcReq := &rpctransport.CreateOrderRequest{
+		PropertySize:   rpctransport.PropertySize(*req.PropertySize),
+		OrderStatus:    rpctransport.OrderStatus(*req.OrderStatus),
+		MoveDate:       req.MoveDate.AsTime(),
+		Name:           *req.Name,
+		Email:          *req.Email,
+		Phone:          *req.Phone,
+		MoveFrom:       *req.MoveFrom,
+		MoveTo:         *req.MoveTo,
+		AdditionalInfo: *req.AdditionalInfo,
+	}
+
+	if err := validate(s.Validator, rpcReq, ErrValidationFailed); err != nil {
+		return nil, err
+	}
+
+	order, err := s.GRPCMovingHandlers.CreateOrder(ctx, rpcReq)
 	if err != nil {
 		return nil, GRPCUnknownError(err, nil)
 	}
 
-	return resp, nil
+	return &rpc.CreateOrderResponse{Order: &rpc.Order{
+		ID:             order.ID,
+		PropertySize:   utils.PtrIfNotZero(rpc.PropertySize(order.PropertySize)),
+		OrderStatus:    utils.PtrIfNotZero(rpc.OrderStatus(order.OrderStatus)),
+		MoveDate:       timestamppb.New(order.MoveDate),
+		Name:           &order.Name,
+		Email:          &order.Email,
+		Phone:          &order.Phone,
+		MoveFrom:       &order.MoveFrom,
+		MoveTo:         &order.MoveTo,
+		AdditionalInfo: &order.AdditionalInfo,
+	}}, nil
 }
 
-func (s *Server) GetOrder(ctx context.Context, _ *emptypb.Empty) (*rpc.GetOrderResponse, error) {
-	resp, err := s.GRPCMovingHandlers.GetOrder(ctx, nil)
+func (s *Server) AllOrders(ctx context.Context, _ *emptypb.Empty) (*rpc.AllOrdersResponse, error) {
+	rpcOrders, err := s.GRPCMovingHandlers.AllOrders(ctx)
 	if err != nil {
 		return nil, GRPCUnknownError(err, nil)
 	}
 
-	return resp, nil
+	orders := make([]*rpc.Order, 0, len(rpcOrders))
+	for _, order := range rpcOrders {
+		propertySize := rpc.PropertySize(order.PropertySize)
+		orderStatus := rpc.OrderStatus(order.OrderStatus)
+
+		orders = append(orders, &rpc.Order{
+			ID:             order.ID,
+			PropertySize:   &propertySize,
+			OrderStatus:    &orderStatus,
+			MoveDate:       timestamppb.New(order.MoveDate),
+			Name:           &order.Name,
+			Email:          &order.Email,
+			Phone:          &order.Phone,
+			MoveFrom:       &order.MoveFrom,
+			MoveTo:         &order.MoveTo,
+			AdditionalInfo: &order.AdditionalInfo,
+		})
+	}
+
+	return &rpc.AllOrdersResponse{Orders: orders}, nil
+}
+
+func (s *Server) UpdateOrder(ctx context.Context, req *rpc.UpdateOrderRequest) (*emptypb.Empty, error) {
+	rpcReq := &rpctransport.UpdateOrderRequest{
+		ID:           req.GetID(),
+		PropertySize: utils.PtrIfNotZero(rpctransport.PropertySize(req.GetPropertySize())),
+		OrderStatus:  utils.PtrIfNotZero(rpctransport.OrderStatus(req.GetOrderStatus())),
+		MoveDate:     utils.PtrIfNotZero(req.GetMoveDate().AsTime()),
+		Name:         utils.PtrIfNotZero(req.GetName()),
+		Email:        utils.PtrIfNotZero(req.GetEmail()),
+		Phone:        utils.PtrIfNotZero(req.GetPhone()),
+		MoveFrom:     utils.PtrIfNotZero(req.GetMoveFrom()),
+		MoveTo:       utils.PtrIfNotZero(req.GetMoveTo()),
+	}
+
+	if err := validate(s.Validator, rpcReq, ErrValidationFailed); err != nil {
+		return nil, err
+	}
+
+	if err := s.GRPCMovingHandlers.UpdateOrder(ctx, rpcReq); err != nil {
+		return nil, GRPCUnknownError(err, nil)
+	}
+
+	return &emptypb.Empty{}, nil
 }
 
 func GRPCUnauthorizedError[T GRPCErrors](reason T, err error) error {
