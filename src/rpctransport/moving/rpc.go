@@ -3,9 +3,9 @@ package moving
 import (
 	"context"
 	"fmt"
+	"github.com/ingvarmattis/moving/src/infra/utils"
 	"time"
 
-	"github.com/ingvarmattis/moving/src/infra/utils"
 	"github.com/ingvarmattis/moving/src/services"
 	svc "github.com/ingvarmattis/moving/src/services/moving"
 )
@@ -17,7 +17,6 @@ type Handlers struct {
 func (s *Handlers) CreateOrder(ctx context.Context, req *CreateOrderRequest) (*Order, error) {
 	svcReq := &svc.CreateOrderRequest{
 		PropertySize:   svc.PropertySize(req.PropertySize),
-		OrderStatus:    svc.OrderStatus(req.OrderStatus),
 		MoveDate:       req.MoveDate,
 		Name:           req.Name,
 		Email:          req.Email,
@@ -75,8 +74,6 @@ func (s *Handlers) AllOrders(ctx context.Context) ([]*Order, error) {
 func (s *Handlers) UpdateOrder(ctx context.Context, req *UpdateOrderRequest) error {
 	svcReq := &svc.UpdateOrderRequest{
 		ID:             req.ID,
-		PropertySize:   utils.PtrIfNotZero(svc.PropertySize(*req.PropertySize)),
-		OrderStatus:    utils.PtrIfNotZero(svc.OrderStatus(*req.OrderStatus)),
 		MoveDate:       req.MoveDate,
 		Name:           req.Name,
 		Email:          req.Email,
@@ -84,6 +81,14 @@ func (s *Handlers) UpdateOrder(ctx context.Context, req *UpdateOrderRequest) err
 		MoveFrom:       req.MoveFrom,
 		MoveTo:         req.MoveTo,
 		AdditionalInfo: req.AdditionalInfo,
+	}
+
+	if req.PropertySize != nil {
+		svcReq.PropertySize = utils.PtrIfNotZero(svc.PropertySize(*req.PropertySize))
+	}
+
+	if req.OrderStatus != nil {
+		svcReq.OrderStatus = utils.PtrIfNotZero(svc.OrderStatus(*req.OrderStatus))
 	}
 
 	if err := s.Service.MovingService.UpdateOrder(ctx, svcReq); err != nil {
@@ -117,14 +122,13 @@ const (
 
 type CreateOrderRequest struct {
 	PropertySize   PropertySize
-	OrderStatus    OrderStatus
 	MoveDate       time.Time
 	Name           string
 	Email          string
 	Phone          string
 	MoveFrom       string
 	MoveTo         string
-	AdditionalInfo string
+	AdditionalInfo *string
 }
 
 type Order struct {
@@ -137,7 +141,7 @@ type Order struct {
 	Phone          string
 	MoveFrom       string
 	MoveTo         string
-	AdditionalInfo string
+	AdditionalInfo *string
 }
 
 type UpdateOrderRequest struct {

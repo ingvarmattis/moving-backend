@@ -2,6 +2,7 @@ package interceptors
 
 import (
 	"context"
+	"errors"
 	"github.com/ingvarmattis/moving/src/infra/log"
 	"runtime/debug"
 	"strings"
@@ -9,6 +10,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"google.golang.org/grpc"
 )
+
+var ErrPanicHandled = errors.New("panic handled")
 
 func UnaryServerPanicsInterceptor(logger *log.Zap, serviceName string) grpc.UnaryServerInterceptor {
 	serviceName = strings.ReplaceAll(serviceName, "-", "_")
@@ -22,13 +25,18 @@ func UnaryServerPanicsInterceptor(logger *log.Zap, serviceName string) grpc.Unar
 
 	prometheus.MustRegister(panicsCounter)
 
-	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
+	return func(
+		ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler,
+	) (resp any, err error) {
 		method := extractShortMethodName(info.FullMethod)
 
 		defer func() {
 			if r := recover(); r != nil {
 				logger.Warn("panic: " + string(debug.Stack()))
 				panicsCounter.WithLabelValues(method).Inc()
+
+				err = ErrPanicHandled
+				resp = nil
 			}
 		}()
 

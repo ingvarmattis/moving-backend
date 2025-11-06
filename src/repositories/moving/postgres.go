@@ -2,6 +2,7 @@ package moving
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"log"
@@ -35,17 +36,18 @@ returning id, name, email, phone, move_date, move_from, move_to,
 
 	row := p.pool.QueryRow(ctx, query,
 		req.Name, req.Email, req.Phone, req.MoveDate, req.MoveFrom,
-		req.MoveTo, req.PropertySize, req.OrderStatus, req.AdditionalInfo,
+		req.MoveTo, req.PropertySize, OrderStatusCreated, req.AdditionalInfo,
 	)
 
 	var (
 		order                     Order
 		propertySize, orderStatus string
+		additionInfo              sql.NullString
 	)
 	err := row.Scan(
 		&order.ID, &order.Name, &order.Email, &order.Phone,
 		&order.MoveDate, &order.MoveFrom, &order.MoveTo, &propertySize,
-		&orderStatus, &order.AdditionalInfo, &order.CreatedAt, &order.UpdatedAt,
+		&orderStatus, &additionInfo, &order.CreatedAt, &order.UpdatedAt,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to scan inserted order: %w", err)
@@ -54,12 +56,16 @@ returning id, name, email, phone, move_date, move_from, move_to,
 	order.PropertySize = NewPropertySize(propertySize)
 	order.OrderStatus = NewOrderStatus(orderStatus)
 
+	if additionInfo.Valid {
+		order.AdditionalInfo = &additionInfo.String
+	}
+
 	return &order, nil
 }
 
 func (p *Postgres) AllOrders(ctx context.Context) ([]*Order, error) {
 	query := `
-select 
+select
 	id, name, email, phone, move_date, move_from, move_to,
 	property_size, status, additional_info, created_at, updated_at
 from moving.orders
@@ -114,7 +120,7 @@ func (p *Postgres) UpdateOrder(ctx context.Context, req *UpdateOrderRequest) err
 		argPos++
 	}
 	if req.OrderStatus != nil {
-		setClauses = append(setClauses, fmt.Sprintf("order_status = $%d", argPos))
+		setClauses = append(setClauses, fmt.Sprintf("status = $%d", argPos))
 		args = append(args, *req.OrderStatus)
 		argPos++
 	}
@@ -267,14 +273,13 @@ func NewOrderStatus(s string) OrderStatus {
 
 type CreateOrderRequest struct {
 	PropertySize   PropertySize
-	OrderStatus    OrderStatus
 	MoveDate       time.Time
 	Name           string
 	Email          string
 	Phone          string
 	MoveFrom       string
 	MoveTo         string
-	AdditionalInfo string
+	AdditionalInfo *string
 }
 
 type Order struct {
@@ -282,14 +287,14 @@ type Order struct {
 	PropertySize   PropertySize
 	OrderStatus    OrderStatus
 	MoveDate       time.Time
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
 	Name           string
 	Email          string
 	Phone          string
 	MoveFrom       string
 	MoveTo         string
-	AdditionalInfo string
-	CreatedAt      time.Time
-	UpdatedAt      time.Time
+	AdditionalInfo *string
 }
 
 type UpdateOrderRequest struct {

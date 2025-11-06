@@ -151,9 +151,6 @@
         "PropertySize": {
           "$ref": "#/definitions/v1PropertySize"
         },
-        "OrderStatus": {
-          "$ref": "#/definitions/v1OrderStatus"
-        },
         "MoveDate": {
           "type": "string",
           "format": "date-time"

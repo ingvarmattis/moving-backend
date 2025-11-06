@@ -8,7 +8,7 @@ import "google/protobuf/timestamp.proto";
 import "params/property_size.proto";
 import "params/order_status.proto";
 
-message UpdateOrderRequest {
+message  UpdateOrderRequest {
   uint64 ID = 1;
   optional PropertySize PropertySize = 2;
   optional OrderStatus OrderStatus = 3;

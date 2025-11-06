@@ -187,15 +187,14 @@ func NewServer(ctx context.Context, grpcPort int, opts *NewServerOptions) *Serve
 
 func (s *Server) CreateOrder(ctx context.Context, req *rpc.CreateOrderRequest) (*rpc.CreateOrderResponse, error) {
 	rpcReq := &rpctransport.CreateOrderRequest{
-		PropertySize:   rpctransport.PropertySize(*req.PropertySize),
-		OrderStatus:    rpctransport.OrderStatus(*req.OrderStatus),
+		PropertySize:   rpctransport.PropertySize(req.PropertySize),
 		MoveDate:       req.MoveDate.AsTime(),
-		Name:           *req.Name,
-		Email:          *req.Email,
-		Phone:          *req.Phone,
-		MoveFrom:       *req.MoveFrom,
-		MoveTo:         *req.MoveTo,
-		AdditionalInfo: *req.AdditionalInfo,
+		Name:           req.Name,
+		Email:          req.Email,
+		Phone:          req.Phone,
+		MoveFrom:       req.MoveFrom,
+		MoveTo:         req.MoveTo,
+		AdditionalInfo: req.AdditionalInfo,
 	}
 
 	if err := validate(s.Validator, rpcReq, ErrValidationFailed); err != nil {
@@ -217,7 +216,7 @@ func (s *Server) CreateOrder(ctx context.Context, req *rpc.CreateOrderRequest) (
 		Phone:          &order.Phone,
 		MoveFrom:       &order.MoveFrom,
 		MoveTo:         &order.MoveTo,
-		AdditionalInfo: &order.AdditionalInfo,
+		AdditionalInfo: order.AdditionalInfo,
 	}}, nil
 }
 
@@ -242,7 +241,7 @@ func (s *Server) AllOrders(ctx context.Context, _ *emptypb.Empty) (*rpc.AllOrder
 			Phone:          &order.Phone,
 			MoveFrom:       &order.MoveFrom,
 			MoveTo:         &order.MoveTo,
-			AdditionalInfo: &order.AdditionalInfo,
+			AdditionalInfo: order.AdditionalInfo,
 		})
 	}
 
@@ -251,15 +250,19 @@ func (s *Server) AllOrders(ctx context.Context, _ *emptypb.Empty) (*rpc.AllOrder
 
 func (s *Server) UpdateOrder(ctx context.Context, req *rpc.UpdateOrderRequest) (*emptypb.Empty, error) {
 	rpcReq := &rpctransport.UpdateOrderRequest{
-		ID:           req.GetID(),
-		PropertySize: utils.PtrIfNotZero(rpctransport.PropertySize(req.GetPropertySize())),
-		OrderStatus:  utils.PtrIfNotZero(rpctransport.OrderStatus(req.GetOrderStatus())),
-		MoveDate:     utils.PtrIfNotZero(req.GetMoveDate().AsTime()),
-		Name:         utils.PtrIfNotZero(req.GetName()),
-		Email:        utils.PtrIfNotZero(req.GetEmail()),
-		Phone:        utils.PtrIfNotZero(req.GetPhone()),
-		MoveFrom:     utils.PtrIfNotZero(req.GetMoveFrom()),
-		MoveTo:       utils.PtrIfNotZero(req.GetMoveTo()),
+		ID:             req.GetID(),
+		PropertySize:   utils.PtrIfNotZero(rpctransport.PropertySize(req.GetPropertySize())),
+		OrderStatus:    utils.PtrIfNotZero(rpctransport.OrderStatus(req.GetOrderStatus())),
+		Name:           utils.PtrIfNotZero(req.GetName()),
+		Email:          utils.PtrIfNotZero(req.GetEmail()),
+		Phone:          utils.PtrIfNotZero(req.GetPhone()),
+		MoveFrom:       utils.PtrIfNotZero(req.GetMoveFrom()),
+		MoveTo:         utils.PtrIfNotZero(req.GetMoveTo()),
+		AdditionalInfo: utils.PtrIfNotZero(req.GetAdditionalInfo()),
+	}
+
+	if req.GetMoveDate() != nil {
+		rpcReq.MoveDate = utils.PtrIfNotZero(req.GetMoveDate().AsTime())
 	}
 
 	if err := validate(s.Validator, rpcReq, ErrValidationFailed); err != nil {

@@ -33,7 +33,6 @@ func NewService(movingStorage movingStorage) *Service {
 func (s *Service) CreateOrder(ctx context.Context, req *CreateOrderRequest) (*Order, error) {
 	repoReq := &repo.CreateOrderRequest{
 		PropertySize:   repo.PropertySize(req.PropertySize),
-		OrderStatus:    repo.OrderStatus(req.OrderStatus),
 		MoveDate:       req.MoveDate,
 		Name:           req.Name,
 		Email:          req.Email,
@@ -91,8 +90,6 @@ func (s *Service) AllOrders(ctx context.Context) ([]*Order, error) {
 func (s *Service) UpdateOrder(ctx context.Context, req *UpdateOrderRequest) error {
 	repoReq := &repo.UpdateOrderRequest{
 		ID:             req.ID,
-		PropertySize:   utils.PtrIfNotZero(repo.PropertySize(*req.PropertySize)),
-		OrderStatus:    utils.PtrIfNotZero(repo.OrderStatus(*req.OrderStatus)),
 		MoveDate:       req.MoveDate,
 		Name:           req.Name,
 		Email:          req.Email,
@@ -100,6 +97,14 @@ func (s *Service) UpdateOrder(ctx context.Context, req *UpdateOrderRequest) erro
 		MoveFrom:       req.MoveFrom,
 		MoveTo:         req.MoveTo,
 		AdditionalInfo: req.AdditionalInfo,
+	}
+
+	if req.PropertySize != nil {
+		repoReq.PropertySize = utils.PtrIfNotZero(repo.PropertySize(*req.PropertySize))
+	}
+
+	if req.OrderStatus != nil {
+		repoReq.OrderStatus = utils.PtrIfNotZero(repo.OrderStatus(*req.OrderStatus))
 	}
 
 	if err := s.movingStorage.UpdateOrder(ctx, repoReq); err != nil {
@@ -133,14 +138,13 @@ const (
 
 type CreateOrderRequest struct {
 	PropertySize   PropertySize
-	OrderStatus    OrderStatus
 	MoveDate       time.Time
 	Name           string
 	Email          string
 	Phone          string
 	MoveFrom       string
 	MoveTo         string
-	AdditionalInfo string
+	AdditionalInfo *string
 }
 
 type Order struct {
@@ -153,7 +157,7 @@ type Order struct {
 	Phone          string
 	MoveFrom       string
 	MoveTo         string
-	AdditionalInfo string
+	AdditionalInfo *string
 }
 
 type UpdateOrderRequest struct {

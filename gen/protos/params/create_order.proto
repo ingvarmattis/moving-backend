@@ -6,19 +6,17 @@ option go_package = "./gen/servergrpc/moving;servergrpc";
 
 import "google/protobuf/timestamp.proto";
 import "params/property_size.proto";
-import "params/order_status.proto";
 import "params/order.proto";
 
 message CreateOrderRequest {
-  optional PropertySize PropertySize = 1;
-  optional OrderStatus OrderStatus = 2;
-  optional google.protobuf.Timestamp MoveDate = 3;
-  optional string Name = 4;
-  optional string Email = 5;
-  optional string Phone = 6;
-  optional string MoveFrom = 7;
-  optional string MoveTo = 8;
-  optional string AdditionalInfo = 9;
+  PropertySize PropertySize = 1;
+  google.protobuf.Timestamp MoveDate = 2;
+  string Name = 3;
+  string Email = 4;
+  string Phone = 5;
+  string MoveFrom = 6;
+  string MoveTo = 7;
+  optional string AdditionalInfo = 8;
 }
 
 message CreateOrderResponse {
