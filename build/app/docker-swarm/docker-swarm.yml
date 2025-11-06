@@ -39,11 +39,11 @@ services:
         order: stop-first
       resources:
         reservations:
+          cpus: '0.1'
+          memory: 128M
+        limits:
           cpus: '0.2'
           memory: 256M
-        limits:
-          cpus: '1.0'
-          memory: 1G
       labels:
         - "traefik.enable=false"
 
