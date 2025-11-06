@@ -1,0 +1,53 @@
+services:
+  backend:
+    image: us-east4-docker.pkg.dev/honest-moving/containers/backend:latest
+    environment:
+      - TZ=UTC
+      - MOVING_SERVICE_GRPC_SERVER_LISTEN_PORT=8000
+      - MOVING_SERVICE_HTTP_SERVER_LISTEN_PORT=8001
+      - MOVING_SERVICE_POSTGRES_URL=${POSTGRES_URL}
+      - MOVING_SERVICE_METRICS_ENABLED=${METRICS_ENABLED:-false}
+      - MOVING_SERVICE_HTTP_METRICS_SERVER_LISTEN_PORT=9090
+      - MOVING_SERVICE_OPENTELEMETRY_ENABLED=${OPENTELEMETRY_ENABLED:-false}
+      - MOVING_SERVICE_OPENTELEMETRY_COLLECTOR_URL=${OPENTELEMETRY_COLLECTOR_URL:-http://localhost:4317}
+      - MOVING_SERVICE_OPENTELEMETRY_USE_TLS=${OPENTELEMETRY_USE_TLS:-false}
+    ports:
+      - "8001:8001"
+    networks:
+      - shared-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+        order: stop-first
+      rollback_config:
+        parallelism: 1
+        delay: 5s
+        failure_action: pause
+        order: stop-first
+      resources:
+        reservations:
+          cpus: '0.2'
+          memory: 256M
+        limits:
+          cpus: '1.0'
+          memory: 1G
+      labels:
+        - "traefik.enable=false"
+
+networks:
+  shared-network:
+    external: true
+
