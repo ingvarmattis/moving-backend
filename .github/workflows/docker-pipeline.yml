@@ -120,60 +120,8 @@ jobs:
         echo "Labels: ${{ steps.meta.outputs.labels }}"
         echo "Full image path: ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/backend"
 
-  migrate:
-    needs: [build-push]
-    runs-on: ubuntu-latest
-    environment: moving-backend
-    if: github.event_name != 'pull_request'
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Copy migrations to server
-      uses: appleboy/scp-action@v0.1.7
-      with:
-        host: ${{ vars.HOME_SERVER_IP }}
-        username: ${{ vars.SSH_USER }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        port: 2222
-        source: "backend/build/app/migrations"
-        target: "$HOME"
-
-    - name: Run database migrations
-      uses: appleboy/ssh-action@v1.0.3
-      env:
-        POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
-      with:
-        host: ${{ vars.HOME_SERVER_IP }}
-        username: ${{ vars.SSH_USER }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        port: 2222
-        envs: POSTGRES_URL
-        script: |
-          if [ -z "$POSTGRES_URL" ]; then
-            echo "❌ Error: POSTGRES_URL must be set in secrets"
-            exit 1
-          fi
-          
-          echo "📦 Running database migrations..."
-          docker run --rm \
-            --network shared-network \
-            -v "$HOME/build/app/migrations:/migrations" \
-            migrate/migrate \
-            -path /migrations \
-            -database "$POSTGRES_URL" \
-            up
-          
-          if [ $? -eq 0 ]; then
-            echo "✅ Migrations completed successfully!"
-          else
-            echo "❌ Migration failed!"
-            exit 1
-          fi
-
   deploy:
-    needs: [test, build-push, migrate]
+    needs: [test, build-push]
     runs-on: ubuntu-latest
     environment: moving-backend
     if: github.event_name != 'pull_request'
