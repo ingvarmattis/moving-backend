@@ -157,16 +157,6 @@ jobs:
     - name: Configure Docker for Artifact Registry
       run: gcloud auth configure-docker ${{ env.REGISTRY }} --quiet
 
-    - name: Copy docker-swarm.yml to server
-      uses: appleboy/scp-action@v0.1.7
-      with:
-        host: ${{ vars.HOME_SERVER_IP }}
-        username: ${{ vars.SSH_USER }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        port: 2222
-        source: "backend/build/app/docker-swarm/docker-swarm.yml"
-        target: "$HOME"
-
     - name: Deploy to home server
       uses: appleboy/ssh-action@v1.0.3
       env:
@@ -181,7 +171,7 @@ jobs:
           set -e
           
           STACK_NAME="moving-backend"
-          COMPOSE_FILE="$HOME/docker-swarm.yml"
+          COMPOSE_FILE="/tmp/docker-swarm.yml"
           REGISTRY="us-east4-docker.pkg.dev"
           PROJECT_ID="honest-moving"
           REPOSITORY="containers"
@@ -195,13 +185,63 @@ jobs:
             exit 1
           fi
           
-          # Check if compose file exists
-          if [ ! -f "$COMPOSE_FILE" ]; then
-            echo "❌ Error: Compose file not found at $COMPOSE_FILE"
-            exit 1
-          fi
+          # Create docker-swarm.yml file
+          cat > "$COMPOSE_FILE" << 'EOF'
+          services:
+            backend:
+              image: us-east4-docker.pkg.dev/honest-moving/containers/backend:latest
+              environment:
+                - TZ=UTC
+                - MOVING_SERVICE_GRPC_SERVER_LISTEN_PORT=8000
+                - MOVING_SERVICE_HTTP_SERVER_LISTEN_PORT=8001
+                - MOVING_SERVICE_POSTGRES_URL=${POSTGRES_URL}
+                - MOVING_SERVICE_METRICS_ENABLED=${METRICS_ENABLED:-false}
+                - MOVING_SERVICE_HTTP_METRICS_SERVER_LISTEN_PORT=9090
+                - MOVING_SERVICE_OPENTELEMETRY_ENABLED=${OPENTELEMETRY_ENABLED:-false}
+                - MOVING_SERVICE_OPENTELEMETRY_COLLECTOR_URL=${OPENTELEMETRY_COLLECTOR_URL:-http://localhost:4317}
+                - MOVING_SERVICE_OPENTELEMETRY_USE_TLS=${OPENTELEMETRY_USE_TLS:-false}
+              ports:
+                - "8001:8001"
+              networks:
+                - shared-network
+              logging:
+                driver: "json-file"
+                options:
+                  max-size: "10m"
+                  max-file: "3"
+              deploy:
+                replicas: 1
+                restart_policy:
+                  condition: any
+                  delay: 5s
+                  max_attempts: 3
+                  window: 120s
+                update_config:
+                  parallelism: 1
+                  delay: 10s
+                  failure_action: rollback
+                  order: stop-first
+                rollback_config:
+                  parallelism: 1
+                  delay: 5s
+                  failure_action: pause
+                  order: stop-first
+                resources:
+                  reservations:
+                    cpus: '0.1'
+                    memory: 128M
+                  limits:
+                    cpus: '0.2'
+                    memory: 256M
+                labels:
+                  - "traefik.enable=false"
           
-          echo "✅ Compose file found: $COMPOSE_FILE"
+          networks:
+            shared-network:
+              external: true
+          EOF
+          
+          echo "✅ Compose file created: $COMPOSE_FILE"
           
           # Save GCP key for authentication
           echo '${{ secrets.GCP_REGISTRY_SA_KEY }}' > /tmp/gcp-key.json
