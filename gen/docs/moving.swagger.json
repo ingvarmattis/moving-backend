@@ -16,6 +16,28 @@
     "application/json"
   ],
   "paths": {
+    "/v1/orders": {
+      "get": {
+        "operationId": "MovingService_GetOrders",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetOrdersResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "MovingService"
+        ]
+      }
+    },
     "/v1/orders/create": {
       "post": {
         "operationId": "MovingService_CreateOrder",
@@ -48,30 +70,8 @@
         ]
       }
     },
-    "/v1/orders/get": {
-      "get": {
-        "operationId": "MovingService_AllOrders",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1AllOrdersResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "tags": [
-          "MovingService"
-        ]
-      }
-    },
     "/v1/orders/update": {
-      "post": {
+      "put": {
         "operationId": "MovingService_UpdateOrder",
         "responses": {
           "200": {
@@ -133,18 +133,6 @@
         }
       }
     },
-    "v1AllOrdersResponse": {
-      "type": "object",
-      "properties": {
-        "Orders": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1Order"
-          }
-        }
-      }
-    },
     "v1CreateOrderRequest": {
       "type": "object",
       "properties": {
@@ -180,6 +168,18 @@
       "properties": {
         "Order": {
           "$ref": "#/definitions/v1Order"
+        }
+      }
+    },
+    "v1GetOrdersResponse": {
+      "type": "object",
+      "properties": {
+        "Orders": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Order"
+          }
         }
       }
     },

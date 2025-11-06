@@ -12,6 +12,6 @@ type SvcLayer struct {
 
 type MovingService interface {
 	CreateOrder(ctx context.Context, req *svc.CreateOrderRequest) (*svc.Order, error)
-	AllOrders(ctx context.Context) ([]*svc.Order, error)
+	GetOrders(ctx context.Context) ([]*svc.Order, error)
 	UpdateOrder(ctx context.Context, req *svc.UpdateOrderRequest) error
 }

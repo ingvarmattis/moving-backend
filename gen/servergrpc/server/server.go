@@ -37,7 +37,7 @@ var (
 
 type GRPCHandlers interface {
 	CreateOrder(ctx context.Context, req *rpctransport.CreateOrderRequest) (*rpctransport.Order, error)
-	AllOrders(ctx context.Context) ([]*rpctransport.Order, error)
+	GetOrders(ctx context.Context) ([]*rpctransport.Order, error)
 	UpdateOrder(ctx context.Context, req *rpctransport.UpdateOrderRequest) error
 }
 
@@ -48,7 +48,7 @@ type GRPCErrors interface {
 type Server struct {
 	rpc.UnimplementedMovingServiceServer
 
-	GRPCMovingHandlers GRPCHandlers
+	GRPCHandlers GRPCHandlers
 
 	Validator *validator.Validate
 	Logger    *log.Zap
@@ -87,6 +87,21 @@ func (s *Server) ServeHTTP(port *int) error {
 
 	if err := http.ListenAndServe(fmt.Sprintf("0.0.0.0:%d", *port),
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// Handle CORS preflight requests
+			if r.Method == "OPTIONS" {
+				w.Header().Set("Access-Control-Allow-Origin", "*")
+				w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+				w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+				w.Header().Set("Access-Control-Max-Age", "3600")
+				w.WriteHeader(http.StatusNoContent)
+				return
+			}
+
+			// Add CORS headers to all responses
+			w.Header().Set("Access-Control-Allow-Origin", "*")
+			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
 			if r.ProtoMajor == 2 && r.Header.Get("Content-Type") == "application/grpc" {
 				s.grpcServer.ServeHTTP(w, r)
 				return
@@ -162,7 +177,7 @@ func NewServer(ctx context.Context, grpcPort int, opts *NewServerOptions) *Serve
 	s := Server{
 		UnimplementedMovingServiceServer: rpc.UnimplementedMovingServiceServer{},
 
-		GRPCMovingHandlers: opts.GRPCHandlers,
+		GRPCHandlers: opts.GRPCHandlers,
 
 		Validator: opts.Validator,
 		Logger:    opts.Logger,
@@ -201,7 +216,7 @@ func (s *Server) CreateOrder(ctx context.Context, req *rpc.CreateOrderRequest) (
 		return nil, err
 	}
 
-	order, err := s.GRPCMovingHandlers.CreateOrder(ctx, rpcReq)
+	order, err := s.GRPCHandlers.CreateOrder(ctx, rpcReq)
 	if err != nil {
 		return nil, GRPCUnknownError(err, nil)
 	}
@@ -220,8 +235,8 @@ func (s *Server) CreateOrder(ctx context.Context, req *rpc.CreateOrderRequest) (
 	}}, nil
 }
 
-func (s *Server) AllOrders(ctx context.Context, _ *emptypb.Empty) (*rpc.AllOrdersResponse, error) {
-	rpcOrders, err := s.GRPCMovingHandlers.AllOrders(ctx)
+func (s *Server) GetOrders(ctx context.Context, _ *emptypb.Empty) (*rpc.GetOrdersResponse, error) {
+	rpcOrders, err := s.GRPCHandlers.GetOrders(ctx)
 	if err != nil {
 		return nil, GRPCUnknownError(err, nil)
 	}
@@ -245,7 +260,7 @@ func (s *Server) AllOrders(ctx context.Context, _ *emptypb.Empty) (*rpc.AllOrder
 		})
 	}
 
-	return &rpc.AllOrdersResponse{Orders: orders}, nil
+	return &rpc.GetOrdersResponse{Orders: orders}, nil
 }
 
 func (s *Server) UpdateOrder(ctx context.Context, req *rpc.UpdateOrderRequest) (*emptypb.Empty, error) {
@@ -269,7 +284,7 @@ func (s *Server) UpdateOrder(ctx context.Context, req *rpc.UpdateOrderRequest) (
 		return nil, err
 	}
 
-	if err := s.GRPCMovingHandlers.UpdateOrder(ctx, rpcReq); err != nil {
+	if err := s.GRPCHandlers.UpdateOrder(ctx, rpcReq); err != nil {
 		return nil, GRPCUnknownError(err, nil)
 	}
 

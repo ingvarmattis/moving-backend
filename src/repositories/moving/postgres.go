@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -63,7 +62,7 @@ returning id, name, email, phone, move_date, move_from, move_to,
 	return &order, nil
 }
 
-func (p *Postgres) AllOrders(ctx context.Context) ([]*Order, error) {
+func (p *Postgres) GetOrders(ctx context.Context) ([]*Order, error) {
 	query := `
 select
 	id, name, email, phone, move_date, move_from, move_to,
@@ -110,69 +109,36 @@ func (p *Postgres) UpdateOrder(ctx context.Context, req *UpdateOrderRequest) err
 		return fmt.Errorf("invalid id")
 	}
 
-	setClauses := make([]string, 0)
-	args := make([]interface{}, 0)
-	argPos := 1
-
+	// Prepare arguments with proper types
+	var propertySizeStr, orderStatusStr interface{}
 	if req.PropertySize != nil {
-		setClauses = append(setClauses, fmt.Sprintf("property_size = $%d", argPos))
-		args = append(args, *req.PropertySize)
-		argPos++
+		propertySizeStr = req.PropertySize.String()
 	}
 	if req.OrderStatus != nil {
-		setClauses = append(setClauses, fmt.Sprintf("status = $%d", argPos))
-		args = append(args, *req.OrderStatus)
-		argPos++
-	}
-	if req.MoveDate != nil {
-		setClauses = append(setClauses, fmt.Sprintf("move_date = $%d", argPos))
-		args = append(args, *req.MoveDate)
-		argPos++
-	}
-	if req.Name != nil {
-		setClauses = append(setClauses, fmt.Sprintf("name = $%d", argPos))
-		args = append(args, *req.Name)
-		argPos++
-	}
-	if req.Email != nil {
-		setClauses = append(setClauses, fmt.Sprintf("email = $%d", argPos))
-		args = append(args, *req.Email)
-		argPos++
-	}
-	if req.Phone != nil {
-		setClauses = append(setClauses, fmt.Sprintf("phone = $%d", argPos))
-		args = append(args, *req.Phone)
-		argPos++
-	}
-	if req.MoveFrom != nil {
-		setClauses = append(setClauses, fmt.Sprintf("move_from = $%d", argPos))
-		args = append(args, *req.MoveFrom)
-		argPos++
-	}
-	if req.MoveTo != nil {
-		setClauses = append(setClauses, fmt.Sprintf("move_to = $%d", argPos))
-		args = append(args, *req.MoveTo)
-		argPos++
-	}
-	if req.AdditionalInfo != nil {
-		setClauses = append(setClauses, fmt.Sprintf("additional_info = $%d", argPos))
-		args = append(args, *req.AdditionalInfo)
-		argPos++
+		orderStatusStr = req.OrderStatus.String()
 	}
 
-	if len(setClauses) == 0 {
-		return fmt.Errorf("no set clauses found")
-	}
-
-	setClauses = append(setClauses, fmt.Sprintf("updated_at = now()"))
-
-	query := fmt.Sprintf(`
+	query := `
 update moving.orders
-set %s
-where id = $%d
-`, strings.Join(setClauses, ", "), argPos)
+set
+	property_size = coalesce($1, property_size),
+	status = coalesce($2, status),
+	move_date = coalesce($3, move_date),
+	name = coalesce(nullif($4, ''), name),
+	email = coalesce(nullif($5, ''), email),
+	phone = coalesce(nullif($6, ''), phone),
+	move_from = coalesce(nullif($7, ''), move_from),
+	move_to = coalesce(nullif($8, ''), move_to),
+	additional_info = coalesce($9, additional_info),
+	updated_at = now()
+where id = $10
+`
 
-	args = append(args, req.ID)
+	args := []interface{}{
+		propertySizeStr, orderStatusStr, req.MoveDate, req.Name,
+		req.Email, req.Phone, req.MoveFrom, req.MoveTo,
+		req.AdditionalInfo, req.ID,
+	}
 
 	if _, err := p.pool.Exec(ctx, query, args...); err != nil {
 		return fmt.Errorf("failed update row | %w", err)

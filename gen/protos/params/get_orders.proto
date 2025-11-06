@@ -6,6 +6,6 @@ option go_package = "./gen/servergrpc/moving;servergrpc";
 
 import "params/order.proto";
 
-message AllOrdersResponse {
+message GetOrdersResponse {
   repeated Order Orders = 1;
 }

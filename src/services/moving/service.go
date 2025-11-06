@@ -18,7 +18,7 @@ var ErrNotFound = errors.New("not found")
 //go:generate mockgen -source=service.go -destination=mocks/mocks.go -package=mocks
 type movingStorage interface {
 	CreateOrder(ctx context.Context, req *repo.CreateOrderRequest) (*repo.Order, error)
-	AllOrders(ctx context.Context) ([]*repo.Order, error)
+	GetOrders(ctx context.Context) ([]*repo.Order, error)
 	UpdateOrder(ctx context.Context, req *repo.UpdateOrderRequest) error
 }
 
@@ -61,8 +61,8 @@ func (s *Service) CreateOrder(ctx context.Context, req *CreateOrderRequest) (*Or
 	}, nil
 }
 
-func (s *Service) AllOrders(ctx context.Context) ([]*Order, error) {
-	repoOrders, err := s.movingStorage.AllOrders(ctx)
+func (s *Service) GetOrders(ctx context.Context) ([]*Order, error) {
+	repoOrders, err := s.movingStorage.GetOrders(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get all order | %w", err)
 	}

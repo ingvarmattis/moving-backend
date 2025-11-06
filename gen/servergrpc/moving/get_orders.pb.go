@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.1
 // 	protoc        v5.27.0
-// source: params/all_orders.proto
+// source: params/get_orders.proto
 
 package servergrpc
 
@@ -20,28 +20,28 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type AllOrdersResponse struct {
+type GetOrdersResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Orders        []*Order               `protobuf:"bytes,1,rep,name=Orders,proto3" json:"Orders,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *AllOrdersResponse) Reset() {
-	*x = AllOrdersResponse{}
-	mi := &file_params_all_orders_proto_msgTypes[0]
+func (x *GetOrdersResponse) Reset() {
+	*x = GetOrdersResponse{}
+	mi := &file_params_get_orders_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *AllOrdersResponse) String() string {
+func (x *GetOrdersResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*AllOrdersResponse) ProtoMessage() {}
+func (*GetOrdersResponse) ProtoMessage() {}
 
-func (x *AllOrdersResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_params_all_orders_proto_msgTypes[0]
+func (x *GetOrdersResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_params_get_orders_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -52,27 +52,27 @@ func (x *AllOrdersResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use AllOrdersResponse.ProtoReflect.Descriptor instead.
-func (*AllOrdersResponse) Descriptor() ([]byte, []int) {
-	return file_params_all_orders_proto_rawDescGZIP(), []int{0}
+// Deprecated: Use GetOrdersResponse.ProtoReflect.Descriptor instead.
+func (*GetOrdersResponse) Descriptor() ([]byte, []int) {
+	return file_params_get_orders_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *AllOrdersResponse) GetOrders() []*Order {
+func (x *GetOrdersResponse) GetOrders() []*Order {
 	if x != nil {
 		return x.Orders
 	}
 	return nil
 }
 
-var File_params_all_orders_proto protoreflect.FileDescriptor
+var File_params_get_orders_proto protoreflect.FileDescriptor
 
-var file_params_all_orders_proto_rawDesc = []byte{
-	0x0a, 0x17, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x2f, 0x61, 0x6c, 0x6c, 0x5f, 0x6f, 0x72, 0x64,
+var file_params_get_orders_proto_rawDesc = []byte{
+	0x0a, 0x17, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x2f, 0x67, 0x65, 0x74, 0x5f, 0x6f, 0x72, 0x64,
 	0x65, 0x72, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x1f, 0x69, 0x6e, 0x67, 0x76, 0x61,
 	0x72, 0x6d, 0x61, 0x74, 0x74, 0x69, 0x73, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x73,
 	0x2e, 0x6d, 0x6f, 0x76, 0x69, 0x6e, 0x67, 0x2e, 0x76, 0x31, 0x1a, 0x12, 0x70, 0x61, 0x72, 0x61,
 	0x6d, 0x73, 0x2f, 0x6f, 0x72, 0x64, 0x65, 0x72, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x53,
-	0x0a, 0x11, 0x41, 0x6c, 0x6c, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f,
+	0x0a, 0x11, 0x47, 0x65, 0x74, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f,
 	0x6e, 0x73, 0x65, 0x12, 0x3e, 0x0a, 0x06, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x73, 0x18, 0x01, 0x20,
 	0x03, 0x28, 0x0b, 0x32, 0x26, 0x2e, 0x69, 0x6e, 0x67, 0x76, 0x61, 0x72, 0x6d, 0x61, 0x74, 0x74,
 	0x69, 0x73, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x73, 0x2e, 0x6d, 0x6f, 0x76, 0x69,
@@ -84,24 +84,24 @@ var file_params_all_orders_proto_rawDesc = []byte{
 }
 
 var (
-	file_params_all_orders_proto_rawDescOnce sync.Once
-	file_params_all_orders_proto_rawDescData = file_params_all_orders_proto_rawDesc
+	file_params_get_orders_proto_rawDescOnce sync.Once
+	file_params_get_orders_proto_rawDescData = file_params_get_orders_proto_rawDesc
 )
 
-func file_params_all_orders_proto_rawDescGZIP() []byte {
-	file_params_all_orders_proto_rawDescOnce.Do(func() {
-		file_params_all_orders_proto_rawDescData = protoimpl.X.CompressGZIP(file_params_all_orders_proto_rawDescData)
+func file_params_get_orders_proto_rawDescGZIP() []byte {
+	file_params_get_orders_proto_rawDescOnce.Do(func() {
+		file_params_get_orders_proto_rawDescData = protoimpl.X.CompressGZIP(file_params_get_orders_proto_rawDescData)
 	})
-	return file_params_all_orders_proto_rawDescData
+	return file_params_get_orders_proto_rawDescData
 }
 
-var file_params_all_orders_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
-var file_params_all_orders_proto_goTypes = []any{
-	(*AllOrdersResponse)(nil), // 0: ingvarmattis.services.moving.v1.AllOrdersResponse
+var file_params_get_orders_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_params_get_orders_proto_goTypes = []any{
+	(*GetOrdersResponse)(nil), // 0: ingvarmattis.services.moving.v1.GetOrdersResponse
 	(*Order)(nil),             // 1: ingvarmattis.services.moving.v1.Order
 }
-var file_params_all_orders_proto_depIdxs = []int32{
-	1, // 0: ingvarmattis.services.moving.v1.AllOrdersResponse.Orders:type_name -> ingvarmattis.services.moving.v1.Order
+var file_params_get_orders_proto_depIdxs = []int32{
+	1, // 0: ingvarmattis.services.moving.v1.GetOrdersResponse.Orders:type_name -> ingvarmattis.services.moving.v1.Order
 	1, // [1:1] is the sub-list for method output_type
 	1, // [1:1] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
@@ -109,9 +109,9 @@ var file_params_all_orders_proto_depIdxs = []int32{
 	0, // [0:1] is the sub-list for field type_name
 }
 
-func init() { file_params_all_orders_proto_init() }
-func file_params_all_orders_proto_init() {
-	if File_params_all_orders_proto != nil {
+func init() { file_params_get_orders_proto_init() }
+func file_params_get_orders_proto_init() {
+	if File_params_get_orders_proto != nil {
 		return
 	}
 	file_params_order_proto_init()
@@ -119,18 +119,18 @@ func file_params_all_orders_proto_init() {
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: file_params_all_orders_proto_rawDesc,
+			RawDescriptor: file_params_get_orders_proto_rawDesc,
 			NumEnums:      0,
 			NumMessages:   1,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_params_all_orders_proto_goTypes,
-		DependencyIndexes: file_params_all_orders_proto_depIdxs,
-		MessageInfos:      file_params_all_orders_proto_msgTypes,
+		GoTypes:           file_params_get_orders_proto_goTypes,
+		DependencyIndexes: file_params_get_orders_proto_depIdxs,
+		MessageInfos:      file_params_get_orders_proto_msgTypes,
 	}.Build()
-	File_params_all_orders_proto = out.File
-	file_params_all_orders_proto_rawDesc = nil
-	file_params_all_orders_proto_goTypes = nil
-	file_params_all_orders_proto_depIdxs = nil
+	File_params_get_orders_proto = out.File
+	file_params_get_orders_proto_rawDesc = nil
+	file_params_get_orders_proto_goTypes = nil
+	file_params_get_orders_proto_depIdxs = nil
 }

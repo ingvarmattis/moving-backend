@@ -45,8 +45,8 @@ func (s *Handlers) CreateOrder(ctx context.Context, req *CreateOrderRequest) (*O
 	}, nil
 }
 
-func (s *Handlers) AllOrders(ctx context.Context) ([]*Order, error) {
-	repoOrders, err := s.Service.MovingService.AllOrders(ctx)
+func (s *Handlers) GetOrders(ctx context.Context) ([]*Order, error) {
+	repoOrders, err := s.Service.MovingService.GetOrders(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed get all order | %w", err)
 	}
