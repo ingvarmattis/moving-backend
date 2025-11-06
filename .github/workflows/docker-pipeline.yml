@@ -151,14 +151,17 @@ jobs:
 
     - name: Run database migrations
       uses: appleboy/ssh-action@v1.0.3
+      env:
+        POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
       with:
         host: ${{ vars.HOME_SERVER_IP }}
         username: ${{ vars.SSH_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: 2222
+        envs: POSTGRES_URL
         script: |
-          # Clone or update repository to get migrations
-          REPO_DIR="/home/moving-backend"
+          # Use home directory or tmp for repository
+          REPO_DIR="$HOME/moving-backend"
           if [ -d "$REPO_DIR/.git" ]; then
             echo "📥 Updating existing repository..."
             cd "$REPO_DIR"
@@ -173,13 +176,9 @@ jobs:
           
           cd "$REPO_DIR/backend" || { echo "❌ backend directory not found"; exit 1; }
           
-          # Build POSTGRES_URL from individual variables if not set
-          if [ -n "${{ secrets.POSTGRES_URL }}" ]; then
-            DB_URL="${{ secrets.POSTGRES_URL }}"
-          elif [ -n "${{ secrets.POSTGRES_USER }}" ] && [ -n "${{ secrets.POSTGRES_PASSWORD }}" ] && [ -n "${{ secrets.POSTGRES_DB }}" ]; then
-            DB_URL="postgres://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@postgres:5432/${{ secrets.POSTGRES_DB }}?sslmode=disable"
-          else
-            echo "❌ Error: POSTGRES_URL or (POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB) must be set in secrets"
+          # Check if POSTGRES_URL is set
+          if [ -z "$POSTGRES_URL" ]; then
+            echo "❌ Error: POSTGRES_URL must be set in secrets"
             exit 1
           fi
           
@@ -190,7 +189,7 @@ jobs:
             -v "$(pwd)/build/app/migrations:/migrations" \
             migrate/migrate \
             -path /migrations \
-            -database "$DB_URL" \
+            -database "$POSTGRES_URL" \
             up
           
           # Check migration result
@@ -240,14 +239,17 @@ jobs:
 
     - name: Deploy to home server
       uses: appleboy/ssh-action@v1.0.3
+      env:
+        POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
       with:
         host: ${{ vars.HOME_SERVER_IP }}
         username: ${{ vars.SSH_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: 2222
+        envs: POSTGRES_URL
         script: |
           # Clone or update repository
-          REPO_DIR="/home/moving-backend"
+          REPO_DIR="$HOME/moving-backend"
           if [ -d "$REPO_DIR/.git" ]; then
             echo "📥 Updating existing repository..."
             cd "$REPO_DIR"
@@ -262,18 +264,14 @@ jobs:
           
           cd "$REPO_DIR/backend" || { echo "❌ backend directory not found"; exit 1; }
           
-          # Set up environment variables for PostgreSQL connection
-          # Use POSTGRES_URL if provided, otherwise build from individual variables
-          if [ -n "${{ secrets.POSTGRES_URL }}" ]; then
-            export POSTGRES_URL="${{ secrets.POSTGRES_URL }}"
-          elif [ -n "${{ secrets.POSTGRES_USER }}" ] && [ -n "${{ secrets.POSTGRES_PASSWORD }}" ] && [ -n "${{ secrets.POSTGRES_DB }}" ]; then
-            export POSTGRES_USER="${{ secrets.POSTGRES_USER }}"
-            export POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}"
-            export POSTGRES_DB="${{ secrets.POSTGRES_DB }}"
-          else
-            echo "❌ Error: POSTGRES_URL or (POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB) must be set in secrets"
+          # Check if POSTGRES_URL is set
+          if [ -z "$POSTGRES_URL" ]; then
+            echo "❌ Error: POSTGRES_URL must be set in secrets"
             exit 1
           fi
+          
+          # Export POSTGRES_URL for deploy script
+          export POSTGRES_URL="$POSTGRES_URL"
           
           # Set other optional environment variables
           export METRICS_ENABLED="${{ vars.METRICS_ENABLED || 'false' }}"
