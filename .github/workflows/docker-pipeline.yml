@@ -120,8 +120,89 @@ jobs:
         echo "Labels: ${{ steps.meta.outputs.labels }}"
         echo "Full image path: ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/backend"
 
+  migrate:
+    needs: [build-push]
+    runs-on: ubuntu-latest
+    environment: moving-backend
+    if: github.event_name != 'pull_request'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Verify environment variables
+      run: |
+        if [ -z "${{ vars.HOME_SERVER_IP }}" ]; then
+          echo "❌ HOME_SERVER_IP variable is not set"
+          exit 1
+        fi
+        
+        if [ -z "${{ vars.SSH_USER }}" ]; then
+          echo "❌ SSH_USER variable is not set"
+          exit 1
+        fi
+        
+        if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
+          echo "❌ SSH_PRIVATE_KEY secret is not set"
+          exit 1
+        fi
+        
+        echo "✅ All required variables and secrets are set"
+
+    - name: Run database migrations
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ vars.HOME_SERVER_IP }}
+        username: ${{ vars.SSH_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: 2222
+        script: |
+          # Clone or update repository to get migrations
+          REPO_DIR="/home/moving-backend"
+          if [ -d "$REPO_DIR/.git" ]; then
+            echo "📥 Updating existing repository..."
+            cd "$REPO_DIR"
+            git fetch origin
+            git reset --hard origin/main || git reset --hard origin/master
+          else
+            echo "📥 Cloning repository..."
+            mkdir -p "$REPO_DIR"
+            git clone https://github.com/${{ github.repository }}.git "$REPO_DIR"
+            cd "$REPO_DIR"
+          fi
+          
+          cd "$REPO_DIR/backend" || { echo "❌ backend directory not found"; exit 1; }
+          
+          # Build POSTGRES_URL from individual variables if not set
+          if [ -n "${{ secrets.POSTGRES_URL }}" ]; then
+            DB_URL="${{ secrets.POSTGRES_URL }}"
+          elif [ -n "${{ secrets.POSTGRES_USER }}" ] && [ -n "${{ secrets.POSTGRES_PASSWORD }}" ] && [ -n "${{ secrets.POSTGRES_DB }}" ]; then
+            DB_URL="postgres://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@postgres:5432/${{ secrets.POSTGRES_DB }}?sslmode=disable"
+          else
+            echo "❌ Error: POSTGRES_URL or (POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB) must be set in secrets"
+            exit 1
+          fi
+          
+          # Run migrations using migrate/migrate Docker image
+          echo "📦 Running database migrations..."
+          docker run --rm \
+            --network shared-network \
+            -v "$(pwd)/build/app/migrations:/migrations" \
+            migrate/migrate \
+            -path /migrations \
+            -database "$DB_URL" \
+            up
+          
+          # Check migration result
+          if [ $? -eq 0 ]; then
+            echo "✅ Migrations completed successfully!"
+          else
+            echo "❌ Migration failed!"
+            exit 1
+          fi
+
   deploy:
-    needs: [test, build-push]
+    needs: [test, build-push, migrate]
     runs-on: ubuntu-latest
     environment: moving-backend
     if: github.event_name != 'pull_request'
@@ -165,45 +246,55 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: 2222
         script: |
-          cd /home/moving-backend || mkdir -p /home/moving-backend && cd /home/moving-backend
+          # Clone or update repository
+          REPO_DIR="/home/moving-backend"
+          if [ -d "$REPO_DIR/.git" ]; then
+            echo "📥 Updating existing repository..."
+            cd "$REPO_DIR"
+            git fetch origin
+            git reset --hard origin/main || git reset --hard origin/master
+          else
+            echo "📥 Cloning repository..."
+            mkdir -p "$REPO_DIR"
+            git clone https://github.com/${{ github.repository }}.git "$REPO_DIR"
+            cd "$REPO_DIR"
+          fi
           
-          # Stop old container
-          docker stop backend-container 2>/dev/null || true
-          docker rm backend-container 2>/dev/null || true
+          cd "$REPO_DIR/backend" || { echo "❌ backend directory not found"; exit 1; }
           
-          # Remove old image
-          docker rmi ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/backend:latest 2>/dev/null || true
+          # Set up environment variables for PostgreSQL connection
+          # Use POSTGRES_URL if provided, otherwise build from individual variables
+          if [ -n "${{ secrets.POSTGRES_URL }}" ]; then
+            export POSTGRES_URL="${{ secrets.POSTGRES_URL }}"
+          elif [ -n "${{ secrets.POSTGRES_USER }}" ] && [ -n "${{ secrets.POSTGRES_PASSWORD }}" ] && [ -n "${{ secrets.POSTGRES_DB }}" ]; then
+            export POSTGRES_USER="${{ secrets.POSTGRES_USER }}"
+            export POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}"
+            export POSTGRES_DB="${{ secrets.POSTGRES_DB }}"
+          else
+            echo "❌ Error: POSTGRES_URL or (POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB) must be set in secrets"
+            exit 1
+          fi
           
-          # Login to Google Artifact Registry
-          echo '${{ secrets.GCP_REGISTRY_SA_KEY }}' | docker login -u _json_key --password-stdin ${{ env.REGISTRY }}
+          # Set other optional environment variables
+          export METRICS_ENABLED="${{ vars.METRICS_ENABLED || 'false' }}"
+          export OPENTELEMETRY_ENABLED="${{ vars.OPENTELEMETRY_ENABLED || 'false' }}"
+          export OPENTELEMETRY_COLLECTOR_URL="${{ vars.OPENTELEMETRY_COLLECTOR_URL || 'http://localhost:4317' }}"
+          export OPENTELEMETRY_USE_TLS="${{ vars.OPENTELEMETRY_USE_TLS || 'false' }}"
           
-          # Pull new image
-          docker pull ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/backend:latest
+          # Save GCP key for authentication
+          echo '${{ secrets.GCP_REGISTRY_SA_KEY }}' > gcp-key.json
+          chmod 600 gcp-key.json
           
-          # Start new container
-          docker run -d \
-            --name backend-container \
-            --restart unless-stopped \
-            --network shared-network \
-            -p 8001:8001 \
-            -e MOVING_SERVICE_GRPC_SERVER_LISTEN_PORT=8000 \
-            -e MOVING_SERVICE_HTTP_SERVER_LISTEN_PORT=8001 \
-            -e MOVING_SERVICE_POSTGRES_URL=${{ secrets.POSTGRES_URL }} \
-            -e MOVING_SERVICE_METRICS_ENABLED=${{ vars.METRICS_ENABLED || 'false' }} \
-            -e MOVING_SERVICE_HTTP_METRICS_SERVER_LISTEN_PORT=9090 \
-            -e MOVING_SERVICE_OPENTELEMETRY_ENABLED=${{ vars.OPENTELEMETRY_ENABLED || 'false' }} \
-            -e MOVING_SERVICE_OPENTELEMETRY_COLLECTOR_URL=${{ vars.OPENTELEMETRY_COLLECTOR_URL || 'http://localhost:4317' }} \
-            -e MOVING_SERVICE_OPENTELEMETRY_USE_TLS=${{ vars.OPENTELEMETRY_USE_TLS || 'false' }} \
-            ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/backend:latest
+          # Make deploy script executable
+          chmod +x scripts/deploy-swarm.sh
           
-          # Check status
-          docker ps | grep backend-container
+          # Run deployment script
+          ./scripts/deploy-swarm.sh
           
-          # Check availability
-          sleep 5
-          curl -f http://localhost:8001/health || echo "Health check skipped"
+          # Clean up GCP key
+          rm -f gcp-key.json
           
-          echo "Deployment completed successfully!"
+          echo "✅ Deployment completed successfully!"
 
     - name: Health check
       run: |

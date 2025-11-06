@@ -39,11 +39,19 @@ if [[ -f .env ]]; then
     export $(cat .env | grep -v '^#' | xargs)
 fi
 
-# Check if required environment variables are set
+# Build POSTGRES_URL from individual variables if not set
 if [[ -z "$POSTGRES_URL" ]]; then
-    echo "❌ Error: POSTGRES_URL environment variable is not set!"
-    echo "💡 Please set POSTGRES_URL in .env file or export it"
-    exit 1
+    if [[ -n "$POSTGRES_USER" && -n "$POSTGRES_PASSWORD" && -n "$POSTGRES_DB" ]]; then
+        echo "📝 Building POSTGRES_URL from individual variables..."
+        export POSTGRES_URL="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable"
+        echo "✅ POSTGRES_URL built: postgres://${POSTGRES_USER}:***@postgres:5432/${POSTGRES_DB}?sslmode=disable"
+    else
+        echo "❌ Error: POSTGRES_URL or (POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB) must be set!"
+        echo "💡 Please set POSTGRES_URL or individual variables in .env file or export them"
+        exit 1
+    fi
+else
+    echo "✅ Using provided POSTGRES_URL"
 fi
 
 # Check if GCP key file exists
