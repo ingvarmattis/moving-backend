@@ -157,6 +157,16 @@ jobs:
     - name: Configure Docker for Artifact Registry
       run: gcloud auth configure-docker ${{ env.REGISTRY }} --quiet
 
+    - name: Copy docker-swarm.yml to server
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ vars.HOME_SERVER_IP }}
+        username: ${{ vars.SSH_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: 2222
+        source: "backend/build/app/docker-swarm/docker-swarm.yml"
+        target: "$HOME"
+
     - name: Deploy to home server
       uses: appleboy/ssh-action@v1.0.3
       env:
@@ -168,21 +178,16 @@ jobs:
         port: 2222
         envs: POSTGRES_URL
         script: |
-          # Clone or update repository
-          REPO_DIR="$HOME/moving-backend"
-          if [ -d "$REPO_DIR/.git" ]; then
-            echo "📥 Updating existing repository..."
-            cd "$REPO_DIR"
-            git fetch origin
-            git reset --hard origin/main || git reset --hard origin/master
-          else
-            echo "📥 Cloning repository..."
-            mkdir -p "$REPO_DIR"
-            git clone https://github.com/${{ github.repository }}.git "$REPO_DIR"
-            cd "$REPO_DIR"
-          fi
+          set -e
           
-          cd "$REPO_DIR/backend" || { echo "❌ backend directory not found"; exit 1; }
+          STACK_NAME="moving-backend"
+          COMPOSE_FILE="$HOME/docker-swarm.yml"
+          REGISTRY="us-east4-docker.pkg.dev"
+          PROJECT_ID="honest-moving"
+          REPOSITORY="containers"
+          IMAGE_NAME="backend"
+          
+          echo "🚀 Deploying moving-backend to Docker Swarm..."
           
           # Check if POSTGRES_URL is set
           if [ -z "$POSTGRES_URL" ]; then
@@ -190,27 +195,65 @@ jobs:
             exit 1
           fi
           
-          # Export POSTGRES_URL for deploy script
-          export POSTGRES_URL="$POSTGRES_URL"
+          # Check if compose file exists
+          if [ ! -f "$COMPOSE_FILE" ]; then
+            echo "❌ Error: Compose file not found at $COMPOSE_FILE"
+            exit 1
+          fi
           
-          # Set other optional environment variables
-          export METRICS_ENABLED="${{ vars.METRICS_ENABLED || 'false' }}"
-          export OPENTELEMETRY_ENABLED="${{ vars.OPENTELEMETRY_ENABLED || 'false' }}"
-          export OPENTELEMETRY_COLLECTOR_URL="${{ vars.OPENTELEMETRY_COLLECTOR_URL || 'http://localhost:4317' }}"
-          export OPENTELEMETRY_USE_TLS="${{ vars.OPENTELEMETRY_USE_TLS || 'false' }}"
+          echo "✅ Compose file found: $COMPOSE_FILE"
           
           # Save GCP key for authentication
-          echo '${{ secrets.GCP_REGISTRY_SA_KEY }}' > gcp-key.json
-          chmod 600 gcp-key.json
+          echo '${{ secrets.GCP_REGISTRY_SA_KEY }}' > /tmp/gcp-key.json
+          chmod 600 /tmp/gcp-key.json
           
-          # Make deploy script executable
-          chmod +x scripts/deploy-swarm.sh
+          # Authenticate to Google Cloud Registry
+          echo "🔐 Authenticating to Google Cloud Registry..."
+          cat /tmp/gcp-key.json | docker login -u _json_key --password-stdin $REGISTRY
           
-          # Run deployment script
-          ./scripts/deploy-swarm.sh
+          # Initialize Docker Swarm if not already initialized
+          if ! docker info --format '{{.Swarm.LocalNodeState}}' | grep -q "active"; then
+            echo "🎯 Initializing Docker Swarm..."
+            docker swarm init --advertise-addr $(hostname -I | awk '{print $1}') || echo "⚠️ Swarm may already be initialized"
+          fi
+          
+          # Create shared-network if it doesn't exist
+          if ! docker network ls | grep -q "shared-network"; then
+            echo "🔧 Creating shared-network..."
+            docker network create --driver overlay --attachable shared-network
+          fi
+          
+          # Pull latest image
+          echo "📥 Pulling latest Docker image..."
+          docker pull $REGISTRY/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME:latest
+          
+          # Stop existing stack if running
+          if docker stack ls | grep -q "$STACK_NAME"; then
+            echo "🔄 Stopping existing stack $STACK_NAME..."
+            docker stack rm "$STACK_NAME" || true
+            echo "⏳ Waiting for services to stop..."
+            sleep 15
+          fi
+          
+          # Deploy new stack with environment variables
+          echo "🚀 Deploying new stack $STACK_NAME..."
+          POSTGRES_URL="$POSTGRES_URL" \
+          METRICS_ENABLED="${{ vars.METRICS_ENABLED || 'false' }}" \
+          OPENTELEMETRY_ENABLED="${{ vars.OPENTELEMETRY_ENABLED || 'false' }}" \
+          OPENTELEMETRY_COLLECTOR_URL="${{ vars.OPENTELEMETRY_COLLECTOR_URL || 'http://localhost:4317' }}" \
+          OPENTELEMETRY_USE_TLS="${{ vars.OPENTELEMETRY_USE_TLS || 'false' }}" \
+          docker stack deploy -c "$COMPOSE_FILE" "$STACK_NAME"
+          
+          # Wait for services to start
+          echo "⏳ Waiting for services to start..."
+          sleep 30
+          
+          # Check stack status
+          echo "📊 Checking stack status..."
+          docker stack services "$STACK_NAME"
           
           # Clean up GCP key
-          rm -f gcp-key.json
+          rm -f /tmp/gcp-key.json
           
           echo "✅ Deployment completed successfully!"
 
