@@ -167,6 +167,9 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: 2222
         envs: POSTGRES_URL
+        script_stop: true
+        use_insecure_cipher: false
+        fingerprint: ""
         script: |
           set -e
           
