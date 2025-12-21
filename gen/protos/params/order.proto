@@ -20,3 +20,11 @@ message Order {
   optional string MoveTo = 9;
   optional string AdditionalInfo = 10;
 }
+
+message OrderRequest {
+  uint64 ID = 1;
+}
+
+message OrderResponse {
+  Order Order = 1;
+}

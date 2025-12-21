@@ -37,7 +37,8 @@ var (
 
 type GRPCHandlers interface {
 	CreateOrder(ctx context.Context, req *rpctransport.CreateOrderRequest) (*rpctransport.Order, error)
-	GetOrders(ctx context.Context) ([]*rpctransport.Order, error)
+	Orders(ctx context.Context) ([]*rpctransport.Order, error)
+	OrderByID(ctx context.Context, id uint64) (*rpctransport.Order, error)
 	UpdateOrder(ctx context.Context, req *rpctransport.UpdateOrderRequest) error
 }
 
@@ -235,9 +236,13 @@ func (s *Server) CreateOrder(ctx context.Context, req *rpc.CreateOrderRequest) (
 	}}, nil
 }
 
-func (s *Server) GetOrders(ctx context.Context, _ *emptypb.Empty) (*rpc.GetOrdersResponse, error) {
-	rpcOrders, err := s.GRPCHandlers.GetOrders(ctx)
+func (s *Server) Orders(ctx context.Context, _ *emptypb.Empty) (*rpc.OrdersResponse, error) {
+	rpcOrders, err := s.GRPCHandlers.Orders(ctx)
 	if err != nil {
+		if errors.Is(err, rpctransport.ErrNotFound) {
+			return nil, GRPCNotFoundError(err, nil)
+		}
+
 		return nil, GRPCUnknownError(err, nil)
 	}
 
@@ -260,7 +265,34 @@ func (s *Server) GetOrders(ctx context.Context, _ *emptypb.Empty) (*rpc.GetOrder
 		})
 	}
 
-	return &rpc.GetOrdersResponse{Orders: orders}, nil
+	return &rpc.OrdersResponse{Orders: orders}, nil
+}
+
+func (s *Server) Order(ctx context.Context, req *rpc.OrderRequest) (*rpc.OrderResponse, error) {
+	rpcOrder, err := s.GRPCHandlers.OrderByID(ctx, req.ID)
+	if err != nil {
+		if errors.Is(err, rpctransport.ErrNotFound) {
+			return nil, GRPCNotFoundError(err, nil)
+		}
+
+		return nil, GRPCUnknownError(err, nil)
+	}
+
+	propertySize := rpc.PropertySize(rpcOrder.PropertySize)
+	orderStatus := rpc.OrderStatus(rpcOrder.OrderStatus)
+
+	return &rpc.OrderResponse{Order: &rpc.Order{
+		ID:             rpcOrder.ID,
+		PropertySize:   &propertySize,
+		OrderStatus:    &orderStatus,
+		MoveDate:       timestamppb.New(rpcOrder.MoveDate),
+		Name:           &rpcOrder.Name,
+		Email:          &rpcOrder.Email,
+		Phone:          &rpcOrder.Phone,
+		MoveFrom:       &rpcOrder.MoveFrom,
+		MoveTo:         &rpcOrder.MoveTo,
+		AdditionalInfo: rpcOrder.AdditionalInfo,
+	}}, nil
 }
 
 func (s *Server) UpdateOrder(ctx context.Context, req *rpc.UpdateOrderRequest) (*emptypb.Empty, error) {
@@ -309,6 +341,10 @@ func GRPCUnknownError[T GRPCErrors](reason T, err error) error {
 
 func GRPCCustomError[T GRPCErrors](code codes.Code, reason T, err error) error {
 	return gRPCError(code, reason, err)
+}
+
+func GRPCNotFoundError[T GRPCErrors](reason T, err error) error {
+	return gRPCError(codes.NotFound, reason, err)
 }
 
 func gRPCError[T GRPCErrors](code codes.Code, reason T, serviceErr error) error {

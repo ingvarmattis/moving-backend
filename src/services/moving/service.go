@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/ingvarmattis/moving/src/infra/utils"
 	"time"
 
+	"github.com/ingvarmattis/moving/src/infra/utils"
 	repo "github.com/ingvarmattis/moving/src/repositories/moving"
 )
 
@@ -18,7 +18,8 @@ var ErrNotFound = errors.New("not found")
 //go:generate mockgen -source=service.go -destination=mocks/mocks.go -package=mocks
 type movingStorage interface {
 	CreateOrder(ctx context.Context, req *repo.CreateOrderRequest) (*repo.Order, error)
-	GetOrders(ctx context.Context) ([]*repo.Order, error)
+	Orders(ctx context.Context) ([]*repo.Order, error)
+	OrderByID(ctx context.Context, id uint64) (*repo.Order, error)
 	UpdateOrder(ctx context.Context, req *repo.UpdateOrderRequest) error
 }
 
@@ -61,9 +62,13 @@ func (s *Service) CreateOrder(ctx context.Context, req *CreateOrderRequest) (*Or
 	}, nil
 }
 
-func (s *Service) GetOrders(ctx context.Context) ([]*Order, error) {
-	repoOrders, err := s.movingStorage.GetOrders(ctx)
+func (s *Service) Orders(ctx context.Context) ([]*Order, error) {
+	repoOrders, err := s.movingStorage.Orders(ctx)
 	if err != nil {
+		if errors.Is(err, repo.ErrNotFound) {
+			return nil, ErrNotFound
+		}
+
 		return nil, fmt.Errorf("failed to get all order | %w", err)
 	}
 
@@ -85,6 +90,30 @@ func (s *Service) GetOrders(ctx context.Context) ([]*Order, error) {
 	}
 
 	return orders, nil
+}
+
+func (s *Service) OrderByID(ctx context.Context, id uint64) (*Order, error) {
+	order, err := s.movingStorage.OrderByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, repo.ErrNotFound) {
+			return nil, ErrNotFound
+		}
+
+		return nil, fmt.Errorf("failed to get order | %w", err)
+	}
+
+	return &Order{
+		ID:             order.ID,
+		PropertySize:   PropertySize(order.PropertySize),
+		OrderStatus:    OrderStatus(order.OrderStatus),
+		MoveDate:       order.MoveDate,
+		Name:           order.Name,
+		Email:          order.Email,
+		Phone:          order.Phone,
+		MoveFrom:       order.MoveFrom,
+		MoveTo:         order.MoveTo,
+		AdditionalInfo: order.AdditionalInfo,
+	}, nil
 }
 
 func (s *Service) UpdateOrder(ctx context.Context, req *UpdateOrderRequest) error {

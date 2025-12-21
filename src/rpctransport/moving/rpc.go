@@ -2,13 +2,16 @@ package moving
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"github.com/ingvarmattis/moving/src/infra/utils"
 	"time"
 
+	"github.com/ingvarmattis/moving/src/infra/utils"
 	"github.com/ingvarmattis/moving/src/services"
 	svc "github.com/ingvarmattis/moving/src/services/moving"
 )
+
+var ErrNotFound = errors.New("not found")
 
 type Handlers struct {
 	Service services.SvcLayer
@@ -45,9 +48,13 @@ func (s *Handlers) CreateOrder(ctx context.Context, req *CreateOrderRequest) (*O
 	}, nil
 }
 
-func (s *Handlers) GetOrders(ctx context.Context) ([]*Order, error) {
-	repoOrders, err := s.Service.MovingService.GetOrders(ctx)
+func (s *Handlers) Orders(ctx context.Context) ([]*Order, error) {
+	repoOrders, err := s.Service.MovingService.Orders(ctx)
 	if err != nil {
+		if errors.Is(err, svc.ErrNotFound) {
+			return nil, ErrNotFound
+		}
+
 		return nil, fmt.Errorf("failed get all order | %w", err)
 	}
 
@@ -68,7 +75,35 @@ func (s *Handlers) GetOrders(ctx context.Context) ([]*Order, error) {
 		})
 	}
 
+	if len(orders) == 0 {
+		return nil, ErrNotFound
+	}
+
 	return orders, nil
+}
+
+func (s *Handlers) OrderByID(ctx context.Context, id uint64) (*Order, error) {
+	order, err := s.Service.MovingService.OrderByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, svc.ErrNotFound) {
+			return nil, ErrNotFound
+		}
+
+		return nil, fmt.Errorf("failed get order | %w", err)
+	}
+
+	return &Order{
+		ID:             order.ID,
+		PropertySize:   PropertySize(order.PropertySize),
+		OrderStatus:    OrderStatus(order.OrderStatus),
+		MoveDate:       order.MoveDate,
+		Name:           order.Name,
+		Email:          order.Email,
+		Phone:          order.Phone,
+		MoveFrom:       order.MoveFrom,
+		MoveTo:         order.MoveTo,
+		AdditionalInfo: order.AdditionalInfo,
+	}, nil
 }
 
 func (s *Handlers) UpdateOrder(ctx context.Context, req *UpdateOrderRequest) error {

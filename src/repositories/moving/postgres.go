@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
+	"github.com/jackc/pgx/v5"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -62,7 +62,7 @@ returning id, name, email, phone, move_date, move_from, move_to,
 	return &order, nil
 }
 
-func (p *Postgres) GetOrders(ctx context.Context) ([]*Order, error) {
+func (p *Postgres) Orders(ctx context.Context) ([]*Order, error) {
 	query := `
 select
 	id, name, email, phone, move_date, move_from, move_to,
@@ -73,7 +73,7 @@ order by created_at desc
 
 	rows, err := p.pool.Query(ctx, query)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("failed to query orders | %w", err)
 	}
 	defer rows.Close()
 
@@ -101,7 +101,44 @@ order by created_at desc
 		return nil, fmt.Errorf("failed get all orders | %w", err)
 	}
 
+	if len(orders) == 0 {
+		return nil, ErrNotFound
+	}
+
 	return orders, nil
+}
+
+func (p *Postgres) OrderByID(ctx context.Context, id uint64) (*Order, error) {
+	query := `
+select
+	id, name, email, phone, move_date, move_from, move_to,
+	property_size, status, additional_info, created_at, updated_at
+from moving.orders
+where id = $1
+`
+
+	row := p.pool.QueryRow(ctx, query, id)
+
+	var (
+		order                     Order
+		propertySize, orderStatus string
+	)
+
+	if err := row.Scan(
+		&order.ID, &order.Name, &order.Email, &order.Phone, &order.MoveDate, &order.MoveFrom, &order.MoveTo,
+		&propertySize, &orderStatus, &order.AdditionalInfo, &order.CreatedAt, &order.UpdatedAt,
+	); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrNotFound
+		}
+
+		return nil, fmt.Errorf("failed scan order | %w", err)
+	}
+
+	order.PropertySize = NewPropertySize(propertySize)
+	order.OrderStatus = NewOrderStatus(orderStatus)
+
+	return &order, nil
 }
 
 func (p *Postgres) UpdateOrder(ctx context.Context, req *UpdateOrderRequest) error {
@@ -145,96 +182,6 @@ where id = $10
 	}
 
 	return nil
-}
-
-type PropertySize int
-
-const (
-	PropertySizeUnknown PropertySize = iota
-	PropertySizeStudio
-	PropertySize1Bedroom
-	PropertySize2Bedrooms
-	PropertySize3Bedrooms
-	PropertySize4PlusBedrooms
-	PropertySizeCommercial
-)
-
-func (p PropertySize) String() string {
-	switch p {
-	case PropertySizeStudio:
-		return "studio"
-	case PropertySize1Bedroom:
-		return "1_bedroom"
-	case PropertySize2Bedrooms:
-		return "2_bedrooms"
-	case PropertySize3Bedrooms:
-		return "3_bedrooms"
-	case PropertySize4PlusBedrooms:
-		return "4_plus_bedrooms"
-	case PropertySizeCommercial:
-		return "commercial"
-	default:
-		return "unknown"
-	}
-}
-
-func NewPropertySize(s string) PropertySize {
-	switch s {
-	case "studio":
-		return PropertySizeStudio
-	case "1_bedroom":
-		return PropertySize1Bedroom
-	case "2_bedrooms":
-		return PropertySize2Bedrooms
-	case "3_bedrooms":
-		return PropertySize3Bedrooms
-	case "4_plus_bedrooms":
-		return PropertySize4PlusBedrooms
-	case "commercial":
-		return PropertySizeCommercial
-	default:
-		return PropertySizeUnknown
-	}
-}
-
-type OrderStatus int
-
-const (
-	OrderStatusUnknown OrderStatus = iota
-	OrderStatusCreated
-	OrderStatusRejected
-	OrderStatusInProgress
-	OrderStatusDone
-)
-
-func (s OrderStatus) String() string {
-	switch s {
-	case OrderStatusCreated:
-		return "created"
-	case OrderStatusRejected:
-		return "rejected"
-	case OrderStatusInProgress:
-		return "in_progress"
-	case OrderStatusDone:
-		return "done"
-	default:
-		return "unknown"
-	}
-}
-
-func NewOrderStatus(s string) OrderStatus {
-	switch s {
-	case "created":
-		return OrderStatusCreated
-	case "rejected":
-		return OrderStatusRejected
-	case "in_progress":
-		return OrderStatusInProgress
-	case "done":
-		return OrderStatusDone
-	default:
-		return OrderStatusUnknown
-	}
 }
 
 type CreateOrderRequest struct {

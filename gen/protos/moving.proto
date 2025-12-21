@@ -7,7 +7,8 @@ option go_package = "./gen/servergrpc/moving;servergrpc";
 import "google/protobuf/empty.proto";
 import "google/api/annotations.proto";
 import "params/create_order.proto";
-import "params/get_orders.proto";
+import "params/orders.proto";
+import "params/order.proto";
 import "params/update_order.proto";
 
 service MovingService {
@@ -18,9 +19,15 @@ service MovingService {
     };
   }
 
-  rpc GetOrders(google.protobuf.Empty) returns (GetOrdersResponse) {
+  rpc Orders(google.protobuf.Empty) returns (OrdersResponse) {
     option (google.api.http) = {
       get: "/v1/orders"
+    };
+  }
+
+  rpc Order(OrderRequest) returns (OrderResponse) {
+    option (google.api.http) = {
+      get: "/v1/order/{ID}"
     };
   }
 

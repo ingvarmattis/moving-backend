@@ -21,7 +21,8 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	MovingService_CreateOrder_FullMethodName = "/ingvarmattis.services.moving.v1.MovingService/CreateOrder"
-	MovingService_GetOrders_FullMethodName   = "/ingvarmattis.services.moving.v1.MovingService/GetOrders"
+	MovingService_Orders_FullMethodName      = "/ingvarmattis.services.moving.v1.MovingService/Orders"
+	MovingService_Order_FullMethodName       = "/ingvarmattis.services.moving.v1.MovingService/Order"
 	MovingService_UpdateOrder_FullMethodName = "/ingvarmattis.services.moving.v1.MovingService/UpdateOrder"
 )
 
@@ -30,7 +31,8 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MovingServiceClient interface {
 	CreateOrder(ctx context.Context, in *CreateOrderRequest, opts ...grpc.CallOption) (*CreateOrderResponse, error)
-	GetOrders(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetOrdersResponse, error)
+	Orders(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*OrdersResponse, error)
+	Order(ctx context.Context, in *OrderRequest, opts ...grpc.CallOption) (*OrderResponse, error)
 	UpdateOrder(ctx context.Context, in *UpdateOrderRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
@@ -52,10 +54,20 @@ func (c *movingServiceClient) CreateOrder(ctx context.Context, in *CreateOrderRe
 	return out, nil
 }
 
-func (c *movingServiceClient) GetOrders(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetOrdersResponse, error) {
+func (c *movingServiceClient) Orders(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*OrdersResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetOrdersResponse)
-	err := c.cc.Invoke(ctx, MovingService_GetOrders_FullMethodName, in, out, cOpts...)
+	out := new(OrdersResponse)
+	err := c.cc.Invoke(ctx, MovingService_Orders_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *movingServiceClient) Order(ctx context.Context, in *OrderRequest, opts ...grpc.CallOption) (*OrderResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(OrderResponse)
+	err := c.cc.Invoke(ctx, MovingService_Order_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +89,8 @@ func (c *movingServiceClient) UpdateOrder(ctx context.Context, in *UpdateOrderRe
 // for forward compatibility.
 type MovingServiceServer interface {
 	CreateOrder(context.Context, *CreateOrderRequest) (*CreateOrderResponse, error)
-	GetOrders(context.Context, *emptypb.Empty) (*GetOrdersResponse, error)
+	Orders(context.Context, *emptypb.Empty) (*OrdersResponse, error)
+	Order(context.Context, *OrderRequest) (*OrderResponse, error)
 	UpdateOrder(context.Context, *UpdateOrderRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedMovingServiceServer()
 }
@@ -92,8 +105,11 @@ type UnimplementedMovingServiceServer struct{}
 func (UnimplementedMovingServiceServer) CreateOrder(context.Context, *CreateOrderRequest) (*CreateOrderResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateOrder not implemented")
 }
-func (UnimplementedMovingServiceServer) GetOrders(context.Context, *emptypb.Empty) (*GetOrdersResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetOrders not implemented")
+func (UnimplementedMovingServiceServer) Orders(context.Context, *emptypb.Empty) (*OrdersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Orders not implemented")
+}
+func (UnimplementedMovingServiceServer) Order(context.Context, *OrderRequest) (*OrderResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Order not implemented")
 }
 func (UnimplementedMovingServiceServer) UpdateOrder(context.Context, *UpdateOrderRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateOrder not implemented")
@@ -137,20 +153,38 @@ func _MovingService_CreateOrder_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
-func _MovingService_GetOrders_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _MovingService_Orders_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(emptypb.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MovingServiceServer).GetOrders(ctx, in)
+		return srv.(MovingServiceServer).Orders(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: MovingService_GetOrders_FullMethodName,
+		FullMethod: MovingService_Orders_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MovingServiceServer).GetOrders(ctx, req.(*emptypb.Empty))
+		return srv.(MovingServiceServer).Orders(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MovingService_Order_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(OrderRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MovingServiceServer).Order(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MovingService_Order_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MovingServiceServer).Order(ctx, req.(*OrderRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -185,8 +219,12 @@ var MovingService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _MovingService_CreateOrder_Handler,
 		},
 		{
-			MethodName: "GetOrders",
-			Handler:    _MovingService_GetOrders_Handler,
+			MethodName: "Orders",
+			Handler:    _MovingService_Orders_Handler,
+		},
+		{
+			MethodName: "Order",
+			Handler:    _MovingService_Order_Handler,
 		},
 		{
 			MethodName: "UpdateOrder",

@@ -16,14 +16,45 @@
     "application/json"
   ],
   "paths": {
-    "/v1/orders": {
+    "/v1/order/{ID}": {
       "get": {
-        "operationId": "MovingService_GetOrders",
+        "operationId": "MovingService_Order",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1GetOrdersResponse"
+              "$ref": "#/definitions/v1OrderResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "ID",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "MovingService"
+        ]
+      }
+    },
+    "/v1/orders": {
+      "get": {
+        "operationId": "MovingService_Orders",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1OrdersResponse"
             }
           },
           "default": {
@@ -105,6 +136,43 @@
     }
   },
   "definitions": {
+    "movingv1Order": {
+      "type": "object",
+      "properties": {
+        "ID": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "PropertySize": {
+          "$ref": "#/definitions/v1PropertySize"
+        },
+        "OrderStatus": {
+          "$ref": "#/definitions/v1OrderStatus"
+        },
+        "MoveDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "Email": {
+          "type": "string"
+        },
+        "Phone": {
+          "type": "string"
+        },
+        "MoveFrom": {
+          "type": "string"
+        },
+        "MoveTo": {
+          "type": "string"
+        },
+        "AdditionalInfo": {
+          "type": "string"
+        }
+      }
+    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -167,56 +235,15 @@
       "type": "object",
       "properties": {
         "Order": {
-          "$ref": "#/definitions/v1Order"
+          "$ref": "#/definitions/movingv1Order"
         }
       }
     },
-    "v1GetOrdersResponse": {
+    "v1OrderResponse": {
       "type": "object",
       "properties": {
-        "Orders": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1Order"
-          }
-        }
-      }
-    },
-    "v1Order": {
-      "type": "object",
-      "properties": {
-        "ID": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "PropertySize": {
-          "$ref": "#/definitions/v1PropertySize"
-        },
-        "OrderStatus": {
-          "$ref": "#/definitions/v1OrderStatus"
-        },
-        "MoveDate": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "Name": {
-          "type": "string"
-        },
-        "Email": {
-          "type": "string"
-        },
-        "Phone": {
-          "type": "string"
-        },
-        "MoveFrom": {
-          "type": "string"
-        },
-        "MoveTo": {
-          "type": "string"
-        },
-        "AdditionalInfo": {
-          "type": "string"
+        "Order": {
+          "$ref": "#/definitions/movingv1Order"
         }
       }
     },
@@ -230,6 +257,18 @@
         "ORDER_STATUS_DONE"
       ],
       "default": "ORDER_STATUS_UNKNOWN"
+    },
+    "v1OrdersResponse": {
+      "type": "object",
+      "properties": {
+        "Orders": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/movingv1Order"
+          }
+        }
+      }
     },
     "v1PropertySize": {
       "type": "string",
