@@ -28,7 +28,7 @@ import (
 	rpctransport "github.com/ingvarmattis/moving/src/rpctransport/moving"
 )
 
-const domain = "mattis.dev"
+const domain = "honest moving"
 
 var (
 	ErrPortNotSpecified = errors.New("port not specified")
@@ -137,9 +137,6 @@ func (s *Server) ServeWithCustomListener(l net.Listener) error {
 	return nil
 }
 
-// Close stops the gRPC server gracefully. It stops the server from
-// accepting new connections and RPCs and blocks until all the pending RPCs are
-// finished.
 func (s *Server) Close() {
 	s.grpcServer.GracefulStop()
 }
@@ -323,24 +320,12 @@ func (s *Server) UpdateOrder(ctx context.Context, req *rpc.UpdateOrderRequest) (
 	return &emptypb.Empty{}, nil
 }
 
-func GRPCUnauthorizedError[T GRPCErrors](reason T, err error) error {
-	return gRPCError(codes.Unauthenticated, reason, err)
-}
-
 func GRPCValidationError[T GRPCErrors](reason T, err error) error {
 	return gRPCError(codes.InvalidArgument, reason, err)
 }
 
-func GRPCBusinessError[T GRPCErrors](reason T, err error) error {
-	return gRPCError(codes.FailedPrecondition, reason, err)
-}
-
 func GRPCUnknownError[T GRPCErrors](reason T, err error) error {
 	return gRPCError(codes.Unknown, reason, err)
-}
-
-func GRPCCustomError[T GRPCErrors](code codes.Code, reason T, err error) error {
-	return gRPCError(code, reason, err)
 }
 
 func GRPCNotFoundError[T GRPCErrors](reason T, err error) error {
