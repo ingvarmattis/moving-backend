@@ -19,6 +19,7 @@ type Config struct {
 	PostgresConfig PostgresConfig
 	MetricsConfig  MetricsConfig
 	TracingConfig  TracingConfig
+	AuthConfig     AuthConfig
 }
 
 func FromEnv() (*Config, error) {
@@ -48,4 +49,8 @@ type TracingConfig struct {
 	Enabled bool   `envconfig:"MOVING_SERVICE_OPENTELEMETRY_ENABLED" required:"true"`
 	URL     string `envconfig:"MOVING_SERVICE_OPENTELEMETRY_COLLECTOR_URL" required:"true"`
 	UseTLS  bool   `envconfig:"MOVING_SERVICE_OPENTELEMETRY_USE_TLS" required:"true"`
+}
+
+type AuthConfig struct {
+	Tokens []string `envconfig:"MOVING_SERVICE_AUTH_TOKENS" required:"true"`
 }

@@ -3,8 +3,7 @@ package box
 import (
 	"context"
 	"fmt"
-	"github.com/ingvarmattis/moving/src/infra/config"
-	"github.com/ingvarmattis/moving/src/infra/log"
+	"os"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -12,10 +11,14 @@ import (
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
-	sdkTrace "go.opentelemetry.io/otel/sdk/trace"
+	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 	"go.opentelemetry.io/otel/trace"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc/credentials"
+
+	"github.com/ingvarmattis/moving/src/infra/config"
 )
 
 const NotOperational = "noop"
@@ -25,9 +28,9 @@ type Env struct {
 
 	PGXPool *pgxpool.Pool
 
-	Logger *log.Zap
+	Logger *zap.Logger
 
-	TraceProvider *sdkTrace.TracerProvider
+	TraceProvider *tracesdk.TracerProvider
 	Tracer        trace.Tracer
 }
 
@@ -88,13 +91,22 @@ func providePGXPool(ctx context.Context, connConfig string) (*pgxpool.Pool, erro
 	return pool, nil
 }
 
-func provideLogger() *log.Zap {
-	return log.NewZap()
+func provideLogger() *zap.Logger {
+	encoderCfg := zapcore.EncoderConfig{
+		MessageKey:  "m",
+		NameKey:     "logger",
+		LevelKey:    "l",
+		EncodeLevel: zapcore.LowercaseLevelEncoder,
+		TimeKey:     "t",
+		EncodeTime:  zapcore.ISO8601TimeEncoder,
+	}
+
+	return zap.New(zapcore.NewCore(zapcore.NewJSONEncoder(encoderCfg), os.Stdout, zap.DebugLevel))
 }
 
 func provideTracer(
 	ctx context.Context, enabled bool, serviceName, openTelemetryCollectorURL string, secureConnection bool,
-) (trace.Tracer, *sdkTrace.TracerProvider, error) {
+) (trace.Tracer, *tracesdk.TracerProvider, error) {
 	if !enabled {
 		tracer := otel.Tracer(NotOperational)
 		return tracer, nil, nil
@@ -116,9 +128,9 @@ func provideTracer(
 
 	res := resource.NewWithAttributes(semconv.SchemaURL, semconv.ServiceNameKey.String(serviceName))
 
-	tp := sdkTrace.NewTracerProvider(
-		sdkTrace.WithBatcher(exporter),
-		sdkTrace.WithResource(res),
+	tp := tracesdk.NewTracerProvider(
+		tracesdk.WithBatcher(exporter),
+		tracesdk.WithResource(res),
 	)
 
 	otel.SetTracerProvider(tp)

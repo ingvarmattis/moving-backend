@@ -2,17 +2,17 @@ package box
 
 import (
 	"github.com/go-playground/validator/v10"
-	interceptors2 "github.com/ingvarmattis/moving/src/infra/interceptors"
-	"github.com/ingvarmattis/moving/src/infra/log"
-	validator2 "github.com/ingvarmattis/moving/src/rpctransport/validator"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
-	movingRepo "github.com/ingvarmattis/moving/src/repositories/moving"
-	movingSvc "github.com/ingvarmattis/moving/src/services/moving"
+	"github.com/ingvarmattis/moving/src/infra/interceptors"
+	movingrepo "github.com/ingvarmattis/moving/src/repositories/moving"
+	rpcvalidator "github.com/ingvarmattis/moving/src/rpctransport/validator"
+	movingsvc "github.com/ingvarmattis/moving/src/services/moving"
 )
 
 type Resources struct {
-	MovingService *movingSvc.Service
+	MovingService *movingsvc.Service
 
 	Validator *validator.Validate
 
@@ -21,12 +21,12 @@ type Resources struct {
 }
 
 func NewResources(envBox *Env) *Resources {
-	movingService := movingSvc.NewService(movingRepo.NewPostgres(envBox.PGXPool))
+	movingService := movingsvc.NewService(movingrepo.NewPostgres(envBox.PGXPool))
 
 	return &Resources{
 		MovingService: movingService,
 
-		Validator: validator2.MustValidate(),
+		Validator: rpcvalidator.MustValidate(),
 
 		UnaryGRPCServerInterceptors:  provideUnaryGRPCInterceptors(envBox),
 		StreamGRPCServerInterceptors: provideStreamGRPCInterceptors(),
@@ -34,13 +34,14 @@ func NewResources(envBox *Env) *Resources {
 }
 
 func provideUnaryGRPCInterceptors(envBox *Env) []grpc.UnaryServerInterceptor {
-	logger := envBox.Logger.With(log.Arg{Key: "rpc", Value: "grpc"}, log.Arg{Key: "type", Value: "unary"})
+	logger := envBox.Logger.With(zap.String("rpc", "grpc"), zap.String("type", "unary"))
 
 	return []grpc.UnaryServerInterceptor{
-		interceptors2.UnaryServerMetricsInterceptor(envBox.Config.MetricsConfig.Enabled, envBox.Config.ServiceName),
-		interceptors2.UnaryServerTraceInterceptor(envBox.Tracer, envBox.Config.ServiceName),
-		interceptors2.UnaryServerLogInterceptor(logger, envBox.Config.Debug),
-		interceptors2.UnaryServerPanicsInterceptor(logger, envBox.Config.ServiceName),
+		interceptors.UnaryServerMetricsInterceptor(envBox.Config.MetricsConfig.Enabled, envBox.Config.ServiceName),
+		interceptors.UnaryServerTraceInterceptor(envBox.Tracer, envBox.Config.ServiceName),
+		interceptors.UnaryServerLogInterceptor(logger, envBox.Config.Debug),
+		interceptors.UnaryServerAuthInterceptor(envBox.Config.AuthConfig.Tokens),
+		interceptors.UnaryServerPanicsInterceptor(logger, envBox.Config.ServiceName),
 	}
 }
 

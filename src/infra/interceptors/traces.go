@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"go.opentelemetry.io/otel/attribute"
-	otelCodes "go.opentelemetry.io/otel/codes"
+	otelcodes "go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc"
 )
@@ -18,17 +18,17 @@ func UnaryServerTraceInterceptor(tracer trace.Tracer, serviceName string) grpc.U
 
 		resp, err := handler(ctx, req)
 
-		SetSpanStatus(span, err)
+		setSpanStatus(span, err)
 
 		return resp, err
 	}
 }
 
-func SetSpanStatus(span trace.Span, err error) {
+func setSpanStatus(span trace.Span, err error) {
 	if err != nil {
 		span.RecordError(err)
-		span.SetStatus(otelCodes.Error, "")
+		span.SetStatus(otelcodes.Error, "")
 	} else {
-		span.SetStatus(otelCodes.Ok, "")
+		span.SetStatus(otelcodes.Ok, "")
 	}
 }

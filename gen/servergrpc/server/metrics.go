@@ -2,14 +2,14 @@ package server
 
 import (
 	"fmt"
-	"github.com/ingvarmattis/moving/src/infra/box"
-	"github.com/ingvarmattis/moving/src/infra/log"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
+
+	"github.com/ingvarmattis/moving/src/infra/box"
 )
 
 type MetricsServer struct {
@@ -17,7 +17,7 @@ type MetricsServer struct {
 	name string
 	port int
 
-	logger *log.Zap
+	logger *zap.Logger
 }
 
 func (m *MetricsServer) Addr() string {
@@ -28,7 +28,7 @@ func (m *MetricsServer) Name() string {
 	return m.name
 }
 
-func NewMetricsServer(enabled bool, logger *log.Zap, port int) *MetricsServer {
+func NewMetricsServer(enabled bool, logger *zap.Logger, port int) *MetricsServer {
 	if !enabled {
 		return &MetricsServer{
 			name:   box.NotOperational,

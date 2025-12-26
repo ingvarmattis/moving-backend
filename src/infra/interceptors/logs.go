@@ -2,7 +2,6 @@ package interceptors
 
 import (
 	"context"
-	"github.com/ingvarmattis/moving/src/infra/log"
 	"time"
 
 	"go.opentelemetry.io/otel/trace"
@@ -11,7 +10,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func UnaryServerLogInterceptor(logger *log.Zap, debugMode bool) grpc.UnaryServerInterceptor {
+func UnaryServerLogInterceptor(logger *zap.Logger, debugMode bool) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		startTime := time.Now()
 

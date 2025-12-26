@@ -3,17 +3,17 @@ package interceptors
 import (
 	"context"
 	"errors"
-	"github.com/ingvarmattis/moving/src/infra/log"
 	"runtime/debug"
 	"strings"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
 
 var ErrPanicHandled = errors.New("panic handled")
 
-func UnaryServerPanicsInterceptor(logger *log.Zap, serviceName string) grpc.UnaryServerInterceptor {
+func UnaryServerPanicsInterceptor(logger *zap.Logger, serviceName string) grpc.UnaryServerInterceptor {
 	serviceName = strings.ReplaceAll(serviceName, "-", "_")
 
 	panicsCounter := prometheus.NewCounterVec(prometheus.CounterOpts{

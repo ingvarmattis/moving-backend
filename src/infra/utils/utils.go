@@ -9,3 +9,11 @@ func PtrIfNotZero[T any](v T) *T {
 	}
 	return &v
 }
+
+func ToMap[T comparable](s []T) map[T]struct{} {
+	m := make(map[T]struct{}, len(s))
+	for _, v := range s {
+		m[v] = struct{}{}
+	}
+	return m
+}

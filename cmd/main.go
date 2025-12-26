@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	box2 "github.com/ingvarmattis/moving/src/infra/box"
-	"github.com/ingvarmattis/moving/src/infra/log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -17,6 +15,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/ingvarmattis/moving/gen/servergrpc/server"
+	"github.com/ingvarmattis/moving/src/infra/box"
 	rpc "github.com/ingvarmattis/moving/src/rpctransport/moving"
 	"github.com/ingvarmattis/moving/src/services"
 )
@@ -24,12 +23,12 @@ import (
 func main() {
 	serverCTX, serverCancel := context.WithCancel(context.Background())
 
-	envBox, err := box2.NewENV(serverCTX)
+	envBox, err := box.NewENV(serverCTX)
 	if err != nil {
 		panic(err)
 	}
 
-	resources := box2.NewResources(envBox)
+	resources := box.NewResources(envBox)
 
 	grpcCompetitorsServer := server.NewServer(
 		serverCTX,
@@ -70,7 +69,7 @@ func main() {
 			return nil
 		},
 		func() error {
-			if metricsServer.Name() == box2.NotOperational {
+			if metricsServer.Name() == box.NotOperational {
 				return nil
 			}
 
@@ -118,7 +117,7 @@ type (
 )
 
 func gracefullShutdown(
-	logger *log.Zap,
+	logger *zap.Logger,
 	serverGRPC, pgxPool closer,
 	metricsServerHTTP metricsCloser,
 	traceProvider shutdowner,
@@ -139,7 +138,7 @@ func gracefullShutdown(
 		},
 		func() {
 			defer shutdownWG.Done()
-			if metricsServerHTTP.Name() == box2.NotOperational {
+			if metricsServerHTTP.Name() == box.NotOperational {
 				return
 			}
 
@@ -165,7 +164,7 @@ func gracefullShutdown(
 		},
 		func() {
 			defer shutdownWG.Done()
-			if err := logger.Close(); err != nil {
+			if err := logger.Sync(); err != nil {
 				logger.Error("failed to close logger", zap.Error(err))
 			}
 		},

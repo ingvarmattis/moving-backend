@@ -8,7 +8,7 @@ import (
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
-	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"go.uber.org/zap"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
@@ -16,14 +16,13 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/health"
-	healthGRPC "google.golang.org/grpc/health/grpc_health_v1"
+	grpchealth "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	rpc "github.com/ingvarmattis/moving/gen/servergrpc/moving"
-	"github.com/ingvarmattis/moving/src/infra/log"
 	"github.com/ingvarmattis/moving/src/infra/utils"
 	rpctransport "github.com/ingvarmattis/moving/src/rpctransport/moving"
 )
@@ -52,7 +51,7 @@ type Server struct {
 	GRPCHandlers GRPCHandlers
 
 	Validator *validator.Validate
-	Logger    *log.Zap
+	Logger    *zap.Logger
 
 	grpcServer *grpc.Server
 	httpServer *runtime.ServeMux
@@ -123,8 +122,8 @@ func (s *Server) ServeHTTP(port *int) error {
 
 func (s *Server) serveHealthCheck(serviceName string) {
 	healthCheckServer := health.NewServer()
-	healthGRPC.RegisterHealthServer(s.grpcServer, healthCheckServer)
-	healthCheckServer.SetServingStatus(serviceName, healthGRPC.HealthCheckResponse_SERVING)
+	grpchealth.RegisterHealthServer(s.grpcServer, healthCheckServer)
+	healthCheckServer.SetServingStatus(serviceName, grpchealth.HealthCheckResponse_SERVING)
 }
 
 func (s *Server) ServeWithCustomListener(l net.Listener) error {
@@ -146,7 +145,7 @@ type NewServerOptions struct {
 
 	GRPCHandlers GRPCHandlers
 
-	Logger    *log.Zap
+	Logger    *zap.Logger
 	Validator *validator.Validate
 
 	UnaryInterceptors  []grpc.UnaryServerInterceptor
@@ -160,8 +159,8 @@ func NewServer(ctx context.Context, grpcPort int, opts *NewServerOptions) *Serve
 
 	srvOpts = append(
 		srvOpts,
-		grpc.UnaryInterceptor(grpcMiddleware.ChainUnaryServer(opts.UnaryInterceptors...)),
-		grpc.StreamInterceptor(grpcMiddleware.ChainStreamServer(opts.StreamInterceptors...)),
+		grpc.UnaryInterceptor(grpcmiddleware.ChainUnaryServer(opts.UnaryInterceptors...)),
+		grpc.StreamInterceptor(grpcmiddleware.ChainStreamServer(opts.StreamInterceptors...)),
 	)
 
 	grpcServer := grpc.NewServer(srvOpts...)
