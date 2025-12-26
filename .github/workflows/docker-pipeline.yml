@@ -13,7 +13,7 @@ env:
   REPOSITORY: containers
 
 jobs:
-  build-push:
+  build-and-push:
     runs-on: ubuntu-latest
     environment: moving-backend
     if: github.event_name != 'pull_request'
