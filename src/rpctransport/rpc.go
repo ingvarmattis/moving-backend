@@ -1,4 +1,4 @@
-package moving
+package rpctransport
 
 import (
 	"context"
@@ -8,18 +8,23 @@ import (
 
 	"github.com/ingvarmattis/moving/src/infra/utils"
 	"github.com/ingvarmattis/moving/src/services"
-	svc "github.com/ingvarmattis/moving/src/services/moving"
+	orderssvc "github.com/ingvarmattis/moving/src/services/orders"
+	reviewssvc "github.com/ingvarmattis/moving/src/services/reviews"
 )
 
 var ErrNotFound = errors.New("not found")
 
-type Handlers struct {
-	Service services.SvcLayer
+type OrdersHandlers struct {
+	OrdersService services.OrdersService
 }
 
-func (s *Handlers) CreateOrder(ctx context.Context, req *CreateOrderRequest) (*Order, error) {
-	svcReq := &svc.CreateOrderRequest{
-		PropertySize:   svc.PropertySize(req.PropertySize),
+type ReviewsHandlers struct {
+	ReviewsService services.ReviewsService
+}
+
+func (s *OrdersHandlers) CreateOrder(ctx context.Context, req *CreateOrderRequest) (*Order, error) {
+	svcReq := &orderssvc.CreateOrderRequest{
+		PropertySize:   orderssvc.PropertySize(req.PropertySize),
 		MoveDate:       req.MoveDate,
 		Name:           req.Name,
 		Email:          req.Email,
@@ -29,7 +34,7 @@ func (s *Handlers) CreateOrder(ctx context.Context, req *CreateOrderRequest) (*O
 		AdditionalInfo: req.AdditionalInfo,
 	}
 
-	order, err := s.Service.MovingService.CreateOrder(ctx, svcReq)
+	order, err := s.OrdersService.CreateOrder(ctx, svcReq)
 	if err != nil {
 		return nil, fmt.Errorf("failed create order | %w", err)
 	}
@@ -48,10 +53,10 @@ func (s *Handlers) CreateOrder(ctx context.Context, req *CreateOrderRequest) (*O
 	}, nil
 }
 
-func (s *Handlers) Orders(ctx context.Context) ([]*Order, error) {
-	repoOrders, err := s.Service.MovingService.Orders(ctx)
+func (s *OrdersHandlers) Orders(ctx context.Context) ([]*Order, error) {
+	repoOrders, err := s.OrdersService.Orders(ctx)
 	if err != nil {
-		if errors.Is(err, svc.ErrNotFound) {
+		if errors.Is(err, orderssvc.ErrNotFound) {
 			return nil, ErrNotFound
 		}
 
@@ -82,10 +87,10 @@ func (s *Handlers) Orders(ctx context.Context) ([]*Order, error) {
 	return orders, nil
 }
 
-func (s *Handlers) OrderByID(ctx context.Context, id uint64) (*Order, error) {
-	order, err := s.Service.MovingService.OrderByID(ctx, id)
+func (s *OrdersHandlers) OrderByID(ctx context.Context, id uint64) (*Order, error) {
+	order, err := s.OrdersService.OrderByID(ctx, id)
 	if err != nil {
-		if errors.Is(err, svc.ErrNotFound) {
+		if errors.Is(err, orderssvc.ErrNotFound) {
 			return nil, ErrNotFound
 		}
 
@@ -106,8 +111,8 @@ func (s *Handlers) OrderByID(ctx context.Context, id uint64) (*Order, error) {
 	}, nil
 }
 
-func (s *Handlers) UpdateOrder(ctx context.Context, req *UpdateOrderRequest) error {
-	svcReq := &svc.UpdateOrderRequest{
+func (s *OrdersHandlers) UpdateOrder(ctx context.Context, req *UpdateOrderRequest) error {
+	svcReq := &orderssvc.UpdateOrderRequest{
 		ID:             req.ID,
 		MoveDate:       req.MoveDate,
 		Name:           req.Name,
@@ -119,21 +124,21 @@ func (s *Handlers) UpdateOrder(ctx context.Context, req *UpdateOrderRequest) err
 	}
 
 	if req.PropertySize != nil {
-		svcReq.PropertySize = utils.PtrIfNotZero(svc.PropertySize(*req.PropertySize))
+		svcReq.PropertySize = utils.PtrIfNotZero(orderssvc.PropertySize(*req.PropertySize))
 	}
 
 	if req.OrderStatus != nil {
-		svcReq.OrderStatus = utils.PtrIfNotZero(svc.OrderStatus(*req.OrderStatus))
+		svcReq.OrderStatus = utils.PtrIfNotZero(orderssvc.OrderStatus(*req.OrderStatus))
 	}
 
-	if err := s.Service.MovingService.UpdateOrder(ctx, svcReq); err != nil {
+	if err := s.OrdersService.UpdateOrder(ctx, svcReq); err != nil {
 		return fmt.Errorf("failed update order | %w", err)
 	}
 
 	return nil
 }
 
-type PropertySize int
+type PropertySize int8
 
 const (
 	PropertySizeUnknown PropertySize = iota
@@ -145,7 +150,7 @@ const (
 	PropertySizeCommercial
 )
 
-type OrderStatus int
+type OrderStatus int8
 
 const (
 	OrderStatusUnknown OrderStatus = iota
@@ -190,4 +195,35 @@ type UpdateOrderRequest struct {
 	MoveFrom       *string
 	MoveTo         *string
 	AdditionalInfo *string
+}
+
+func (s *ReviewsHandlers) Reviews(ctx context.Context) ([]Review, error) {
+	svcReviews, err := s.ReviewsService.Reviews(ctx)
+	if err != nil {
+		if errors.Is(err, reviewssvc.ErrNotFound) {
+			return nil, ErrNotFound
+		}
+
+		return nil, fmt.Errorf("failed get reviews | %w", err)
+	}
+
+	reviews := make([]Review, 0, len(svcReviews))
+
+	for _, svcReview := range svcReviews {
+		reviews = append(reviews, Review{
+			Text:     svcReview.Text,
+			Name:     svcReview.Name,
+			PhotoURL: svcReview.PhotoURL,
+			Rate:     svcReview.Rate,
+		})
+	}
+
+	return reviews, nil
+}
+
+type Review struct {
+	Text     string
+	Name     string
+	PhotoURL string
+	Rate     int32
 }

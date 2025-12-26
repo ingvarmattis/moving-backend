@@ -1,4 +1,4 @@
-package moving
+package orders
 
 import (
 	"context"
@@ -7,16 +7,14 @@ import (
 	"time"
 
 	"github.com/ingvarmattis/moving/src/infra/utils"
-	repo "github.com/ingvarmattis/moving/src/repositories/moving"
+	repo "github.com/ingvarmattis/moving/src/repositories/orders"
 )
-
-const serviceName = "moving-service"
 
 var ErrNotFound = errors.New("not found")
 
 //go:generate bash -c "mkdir -p mocks"
 //go:generate mockgen -source=service.go -destination=mocks/mocks.go -package=mocks
-type movingStorage interface {
+type ordersStorage interface {
 	CreateOrder(ctx context.Context, req *repo.CreateOrderRequest) (*repo.Order, error)
 	Orders(ctx context.Context) ([]*repo.Order, error)
 	OrderByID(ctx context.Context, id uint64) (*repo.Order, error)
@@ -24,11 +22,11 @@ type movingStorage interface {
 }
 
 type Service struct {
-	movingStorage movingStorage
+	ordersStorage ordersStorage
 }
 
-func NewService(movingStorage movingStorage) *Service {
-	return &Service{movingStorage: movingStorage}
+func NewService(ordersStorage ordersStorage) *Service {
+	return &Service{ordersStorage: ordersStorage}
 }
 
 func (s *Service) CreateOrder(ctx context.Context, req *CreateOrderRequest) (*Order, error) {
@@ -43,7 +41,7 @@ func (s *Service) CreateOrder(ctx context.Context, req *CreateOrderRequest) (*Or
 		AdditionalInfo: req.AdditionalInfo,
 	}
 
-	order, err := s.movingStorage.CreateOrder(ctx, repoReq)
+	order, err := s.ordersStorage.CreateOrder(ctx, repoReq)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create order | %w", err)
 	}
@@ -63,13 +61,13 @@ func (s *Service) CreateOrder(ctx context.Context, req *CreateOrderRequest) (*Or
 }
 
 func (s *Service) Orders(ctx context.Context) ([]*Order, error) {
-	repoOrders, err := s.movingStorage.Orders(ctx)
+	repoOrders, err := s.ordersStorage.Orders(ctx)
 	if err != nil {
 		if errors.Is(err, repo.ErrNotFound) {
 			return nil, ErrNotFound
 		}
 
-		return nil, fmt.Errorf("failed to get all order | %w", err)
+		return nil, fmt.Errorf("failed to get all orders | %w", err)
 	}
 
 	orders := make([]*Order, 0, len(repoOrders))
@@ -93,13 +91,13 @@ func (s *Service) Orders(ctx context.Context) ([]*Order, error) {
 }
 
 func (s *Service) OrderByID(ctx context.Context, id uint64) (*Order, error) {
-	order, err := s.movingStorage.OrderByID(ctx, id)
+	order, err := s.ordersStorage.OrderByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, repo.ErrNotFound) {
 			return nil, ErrNotFound
 		}
 
-		return nil, fmt.Errorf("failed to get order | %w", err)
+		return nil, fmt.Errorf("failed to get order by id | %w", err)
 	}
 
 	return &Order{
@@ -136,14 +134,14 @@ func (s *Service) UpdateOrder(ctx context.Context, req *UpdateOrderRequest) erro
 		repoReq.OrderStatus = utils.PtrIfNotZero(repo.OrderStatus(*req.OrderStatus))
 	}
 
-	if err := s.movingStorage.UpdateOrder(ctx, repoReq); err != nil {
+	if err := s.ordersStorage.UpdateOrder(ctx, repoReq); err != nil {
 		return fmt.Errorf("failed to update order | %w", err)
 	}
 
 	return nil
 }
 
-type PropertySize int
+type PropertySize int8
 
 const (
 	PropertySizeUnknown PropertySize = iota
@@ -155,7 +153,7 @@ const (
 	PropertySizeCommercial
 )
 
-type OrderStatus int
+type OrderStatus int8
 
 const (
 	OrderStatusUnknown OrderStatus = iota

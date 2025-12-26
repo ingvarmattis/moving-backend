@@ -1,17 +1,16 @@
-package moving
+package orders
 
 import (
 	"context"
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/jackc/pgx/v5"
 	"time"
+
+	"github.com/jackc/pgx/v5"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
-
-const packageName = "moving"
 
 var ErrNotFound = errors.New("not found")
 

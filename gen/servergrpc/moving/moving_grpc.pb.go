@@ -20,215 +20,317 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	MovingService_CreateOrder_FullMethodName = "/ingvarmattis.services.moving.v1.MovingService/CreateOrder"
-	MovingService_Orders_FullMethodName      = "/ingvarmattis.services.moving.v1.MovingService/Orders"
-	MovingService_Order_FullMethodName       = "/ingvarmattis.services.moving.v1.MovingService/Order"
-	MovingService_UpdateOrder_FullMethodName = "/ingvarmattis.services.moving.v1.MovingService/UpdateOrder"
+	OrdersService_CreateOrder_FullMethodName = "/ingvarmattis.services.moving.v1.OrdersService/CreateOrder"
+	OrdersService_Orders_FullMethodName      = "/ingvarmattis.services.moving.v1.OrdersService/Orders"
+	OrdersService_Order_FullMethodName       = "/ingvarmattis.services.moving.v1.OrdersService/Order"
+	OrdersService_UpdateOrder_FullMethodName = "/ingvarmattis.services.moving.v1.OrdersService/UpdateOrder"
 )
 
-// MovingServiceClient is the client API for MovingService service.
+// OrdersServiceClient is the client API for OrdersService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type MovingServiceClient interface {
+type OrdersServiceClient interface {
 	CreateOrder(ctx context.Context, in *CreateOrderRequest, opts ...grpc.CallOption) (*CreateOrderResponse, error)
 	Orders(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*OrdersResponse, error)
 	Order(ctx context.Context, in *OrderRequest, opts ...grpc.CallOption) (*OrderResponse, error)
 	UpdateOrder(ctx context.Context, in *UpdateOrderRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
-type movingServiceClient struct {
+type ordersServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewMovingServiceClient(cc grpc.ClientConnInterface) MovingServiceClient {
-	return &movingServiceClient{cc}
+func NewOrdersServiceClient(cc grpc.ClientConnInterface) OrdersServiceClient {
+	return &ordersServiceClient{cc}
 }
 
-func (c *movingServiceClient) CreateOrder(ctx context.Context, in *CreateOrderRequest, opts ...grpc.CallOption) (*CreateOrderResponse, error) {
+func (c *ordersServiceClient) CreateOrder(ctx context.Context, in *CreateOrderRequest, opts ...grpc.CallOption) (*CreateOrderResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(CreateOrderResponse)
-	err := c.cc.Invoke(ctx, MovingService_CreateOrder_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, OrdersService_CreateOrder_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *movingServiceClient) Orders(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*OrdersResponse, error) {
+func (c *ordersServiceClient) Orders(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*OrdersResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(OrdersResponse)
-	err := c.cc.Invoke(ctx, MovingService_Orders_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, OrdersService_Orders_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *movingServiceClient) Order(ctx context.Context, in *OrderRequest, opts ...grpc.CallOption) (*OrderResponse, error) {
+func (c *ordersServiceClient) Order(ctx context.Context, in *OrderRequest, opts ...grpc.CallOption) (*OrderResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(OrderResponse)
-	err := c.cc.Invoke(ctx, MovingService_Order_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, OrdersService_Order_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *movingServiceClient) UpdateOrder(ctx context.Context, in *UpdateOrderRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *ordersServiceClient) UpdateOrder(ctx context.Context, in *UpdateOrderRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, MovingService_UpdateOrder_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, OrdersService_UpdateOrder_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// MovingServiceServer is the server API for MovingService service.
-// All implementations must embed UnimplementedMovingServiceServer
+// OrdersServiceServer is the server API for OrdersService service.
+// All implementations must embed UnimplementedOrdersServiceServer
 // for forward compatibility.
-type MovingServiceServer interface {
+type OrdersServiceServer interface {
 	CreateOrder(context.Context, *CreateOrderRequest) (*CreateOrderResponse, error)
 	Orders(context.Context, *emptypb.Empty) (*OrdersResponse, error)
 	Order(context.Context, *OrderRequest) (*OrderResponse, error)
 	UpdateOrder(context.Context, *UpdateOrderRequest) (*emptypb.Empty, error)
-	mustEmbedUnimplementedMovingServiceServer()
+	mustEmbedUnimplementedOrdersServiceServer()
 }
 
-// UnimplementedMovingServiceServer must be embedded to have
+// UnimplementedOrdersServiceServer must be embedded to have
 // forward compatible implementations.
 //
 // NOTE: this should be embedded by value instead of pointer to avoid a nil
 // pointer dereference when methods are called.
-type UnimplementedMovingServiceServer struct{}
+type UnimplementedOrdersServiceServer struct{}
 
-func (UnimplementedMovingServiceServer) CreateOrder(context.Context, *CreateOrderRequest) (*CreateOrderResponse, error) {
+func (UnimplementedOrdersServiceServer) CreateOrder(context.Context, *CreateOrderRequest) (*CreateOrderResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateOrder not implemented")
 }
-func (UnimplementedMovingServiceServer) Orders(context.Context, *emptypb.Empty) (*OrdersResponse, error) {
+func (UnimplementedOrdersServiceServer) Orders(context.Context, *emptypb.Empty) (*OrdersResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Orders not implemented")
 }
-func (UnimplementedMovingServiceServer) Order(context.Context, *OrderRequest) (*OrderResponse, error) {
+func (UnimplementedOrdersServiceServer) Order(context.Context, *OrderRequest) (*OrderResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Order not implemented")
 }
-func (UnimplementedMovingServiceServer) UpdateOrder(context.Context, *UpdateOrderRequest) (*emptypb.Empty, error) {
+func (UnimplementedOrdersServiceServer) UpdateOrder(context.Context, *UpdateOrderRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateOrder not implemented")
 }
-func (UnimplementedMovingServiceServer) mustEmbedUnimplementedMovingServiceServer() {}
-func (UnimplementedMovingServiceServer) testEmbeddedByValue()                       {}
+func (UnimplementedOrdersServiceServer) mustEmbedUnimplementedOrdersServiceServer() {}
+func (UnimplementedOrdersServiceServer) testEmbeddedByValue()                       {}
 
-// UnsafeMovingServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to MovingServiceServer will
+// UnsafeOrdersServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to OrdersServiceServer will
 // result in compilation errors.
-type UnsafeMovingServiceServer interface {
-	mustEmbedUnimplementedMovingServiceServer()
+type UnsafeOrdersServiceServer interface {
+	mustEmbedUnimplementedOrdersServiceServer()
 }
 
-func RegisterMovingServiceServer(s grpc.ServiceRegistrar, srv MovingServiceServer) {
-	// If the following call pancis, it indicates UnimplementedMovingServiceServer was
+func RegisterOrdersServiceServer(s grpc.ServiceRegistrar, srv OrdersServiceServer) {
+	// If the following call pancis, it indicates UnimplementedOrdersServiceServer was
 	// embedded by pointer and is nil.  This will cause panics if an
 	// unimplemented method is ever invoked, so we test this at initialization
 	// time to prevent it from happening at runtime later due to I/O.
 	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
 		t.testEmbeddedByValue()
 	}
-	s.RegisterService(&MovingService_ServiceDesc, srv)
+	s.RegisterService(&OrdersService_ServiceDesc, srv)
 }
 
-func _MovingService_CreateOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _OrdersService_CreateOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateOrderRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MovingServiceServer).CreateOrder(ctx, in)
+		return srv.(OrdersServiceServer).CreateOrder(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: MovingService_CreateOrder_FullMethodName,
+		FullMethod: OrdersService_CreateOrder_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MovingServiceServer).CreateOrder(ctx, req.(*CreateOrderRequest))
+		return srv.(OrdersServiceServer).CreateOrder(ctx, req.(*CreateOrderRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _MovingService_Orders_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _OrdersService_Orders_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(emptypb.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MovingServiceServer).Orders(ctx, in)
+		return srv.(OrdersServiceServer).Orders(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: MovingService_Orders_FullMethodName,
+		FullMethod: OrdersService_Orders_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MovingServiceServer).Orders(ctx, req.(*emptypb.Empty))
+		return srv.(OrdersServiceServer).Orders(ctx, req.(*emptypb.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _MovingService_Order_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _OrdersService_Order_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(OrderRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MovingServiceServer).Order(ctx, in)
+		return srv.(OrdersServiceServer).Order(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: MovingService_Order_FullMethodName,
+		FullMethod: OrdersService_Order_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MovingServiceServer).Order(ctx, req.(*OrderRequest))
+		return srv.(OrdersServiceServer).Order(ctx, req.(*OrderRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _MovingService_UpdateOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _OrdersService_UpdateOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpdateOrderRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MovingServiceServer).UpdateOrder(ctx, in)
+		return srv.(OrdersServiceServer).UpdateOrder(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: MovingService_UpdateOrder_FullMethodName,
+		FullMethod: OrdersService_UpdateOrder_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MovingServiceServer).UpdateOrder(ctx, req.(*UpdateOrderRequest))
+		return srv.(OrdersServiceServer).UpdateOrder(ctx, req.(*UpdateOrderRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// MovingService_ServiceDesc is the grpc.ServiceDesc for MovingService service.
+// OrdersService_ServiceDesc is the grpc.ServiceDesc for OrdersService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var MovingService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "ingvarmattis.services.moving.v1.MovingService",
-	HandlerType: (*MovingServiceServer)(nil),
+var OrdersService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "ingvarmattis.services.moving.v1.OrdersService",
+	HandlerType: (*OrdersServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "CreateOrder",
-			Handler:    _MovingService_CreateOrder_Handler,
+			Handler:    _OrdersService_CreateOrder_Handler,
 		},
 		{
 			MethodName: "Orders",
-			Handler:    _MovingService_Orders_Handler,
+			Handler:    _OrdersService_Orders_Handler,
 		},
 		{
 			MethodName: "Order",
-			Handler:    _MovingService_Order_Handler,
+			Handler:    _OrdersService_Order_Handler,
 		},
 		{
 			MethodName: "UpdateOrder",
-			Handler:    _MovingService_UpdateOrder_Handler,
+			Handler:    _OrdersService_UpdateOrder_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "moving.proto",
+}
+
+const (
+	ReviewsService_Reviews_FullMethodName = "/ingvarmattis.services.moving.v1.ReviewsService/Reviews"
+)
+
+// ReviewsServiceClient is the client API for ReviewsService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type ReviewsServiceClient interface {
+	Reviews(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ReviewsResponse, error)
+}
+
+type reviewsServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewReviewsServiceClient(cc grpc.ClientConnInterface) ReviewsServiceClient {
+	return &reviewsServiceClient{cc}
+}
+
+func (c *reviewsServiceClient) Reviews(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ReviewsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ReviewsResponse)
+	err := c.cc.Invoke(ctx, ReviewsService_Reviews_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// ReviewsServiceServer is the server API for ReviewsService service.
+// All implementations must embed UnimplementedReviewsServiceServer
+// for forward compatibility.
+type ReviewsServiceServer interface {
+	Reviews(context.Context, *emptypb.Empty) (*ReviewsResponse, error)
+	mustEmbedUnimplementedReviewsServiceServer()
+}
+
+// UnimplementedReviewsServiceServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedReviewsServiceServer struct{}
+
+func (UnimplementedReviewsServiceServer) Reviews(context.Context, *emptypb.Empty) (*ReviewsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Reviews not implemented")
+}
+func (UnimplementedReviewsServiceServer) mustEmbedUnimplementedReviewsServiceServer() {}
+func (UnimplementedReviewsServiceServer) testEmbeddedByValue()                        {}
+
+// UnsafeReviewsServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to ReviewsServiceServer will
+// result in compilation errors.
+type UnsafeReviewsServiceServer interface {
+	mustEmbedUnimplementedReviewsServiceServer()
+}
+
+func RegisterReviewsServiceServer(s grpc.ServiceRegistrar, srv ReviewsServiceServer) {
+	// If the following call pancis, it indicates UnimplementedReviewsServiceServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&ReviewsService_ServiceDesc, srv)
+}
+
+func _ReviewsService_Reviews_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ReviewsServiceServer).Reviews(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ReviewsService_Reviews_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ReviewsServiceServer).Reviews(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// ReviewsService_ServiceDesc is the grpc.ServiceDesc for ReviewsService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var ReviewsService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "ingvarmattis.services.moving.v1.ReviewsService",
+	HandlerType: (*ReviewsServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Reviews",
+			Handler:    _ReviewsService_Reviews_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

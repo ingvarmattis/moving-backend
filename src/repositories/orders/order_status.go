@@ -1,6 +1,6 @@
-package moving
+package orders
 
-type OrderStatus int
+type OrderStatus int8
 
 const (
 	OrderStatusUnknown OrderStatus = iota

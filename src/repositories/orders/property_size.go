@@ -1,6 +1,6 @@
-package moving
+package orders
 
-type PropertySize int
+type PropertySize int8
 
 const (
 	PropertySizeUnknown PropertySize = iota

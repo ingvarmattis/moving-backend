@@ -20,7 +20,7 @@ create type moving.order_status_enum as enum (
     'done'
 );
 
-create table moving.orders (
+create table if not exists moving.orders (
     id              serial                    primary key,
     name            varchar(100)              not null,
     email           varchar(255)              not null,

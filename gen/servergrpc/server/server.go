@@ -24,21 +24,25 @@ import (
 
 	rpc "github.com/ingvarmattis/moving/gen/servergrpc/moving"
 	"github.com/ingvarmattis/moving/src/infra/utils"
-	rpctransport "github.com/ingvarmattis/moving/src/rpctransport/moving"
+	"github.com/ingvarmattis/moving/src/rpctransport"
 )
 
-const domain = "honest moving"
+const domain = "moving"
 
 var (
 	ErrPortNotSpecified = errors.New("port not specified")
 	ErrValidationFailed = errors.New("validation failed")
 )
 
-type GRPCHandlers interface {
+type OrdersGRPCHandlers interface {
 	CreateOrder(ctx context.Context, req *rpctransport.CreateOrderRequest) (*rpctransport.Order, error)
 	Orders(ctx context.Context) ([]*rpctransport.Order, error)
 	OrderByID(ctx context.Context, id uint64) (*rpctransport.Order, error)
 	UpdateOrder(ctx context.Context, req *rpctransport.UpdateOrderRequest) error
+}
+
+type ReviewsGRPCHandlers interface {
+	Reviews(ctx context.Context) ([]rpctransport.Review, error)
 }
 
 type GRPCErrors interface {
@@ -46,9 +50,11 @@ type GRPCErrors interface {
 }
 
 type Server struct {
-	rpc.UnimplementedMovingServiceServer
+	rpc.UnimplementedOrdersServiceServer
+	rpc.UnimplementedReviewsServiceServer
 
-	GRPCHandlers GRPCHandlers
+	OrdersGRPCHandlers  OrdersGRPCHandlers
+	ReviewsGRPCHandlers ReviewsGRPCHandlers
 
 	Validator *validator.Validate
 	Logger    *zap.Logger
@@ -143,7 +149,8 @@ func (s *Server) Close() {
 type NewServerOptions struct {
 	ServiceName string
 
-	GRPCHandlers GRPCHandlers
+	OrdersGRPCHandlers  OrdersGRPCHandlers
+	ReviewsGRPCHandlers ReviewsGRPCHandlers
 
 	Logger    *zap.Logger
 	Validator *validator.Validate
@@ -172,9 +179,11 @@ func NewServer(ctx context.Context, grpcPort int, opts *NewServerOptions) *Serve
 	}
 
 	s := Server{
-		UnimplementedMovingServiceServer: rpc.UnimplementedMovingServiceServer{},
+		UnimplementedOrdersServiceServer:  rpc.UnimplementedOrdersServiceServer{},
+		UnimplementedReviewsServiceServer: rpc.UnimplementedReviewsServiceServer{},
 
-		GRPCHandlers: opts.GRPCHandlers,
+		OrdersGRPCHandlers:  opts.OrdersGRPCHandlers,
+		ReviewsGRPCHandlers: opts.ReviewsGRPCHandlers,
 
 		Validator: opts.Validator,
 		Logger:    opts.Logger,
@@ -182,11 +191,18 @@ func NewServer(ctx context.Context, grpcPort int, opts *NewServerOptions) *Serve
 		grpcServer: grpcServer,
 		httpServer: httpServer,
 	}
-	rpc.RegisterMovingServiceServer(grpcServer, &s)
+	rpc.RegisterOrdersServiceServer(grpcServer, &s)
+	rpc.RegisterReviewsServiceServer(grpcServer, &s)
 
 	httpOpts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 
-	if err := rpc.RegisterMovingServiceHandlerFromEndpoint(
+	if err := rpc.RegisterOrdersServiceHandlerFromEndpoint(
+		ctx, httpServer, fmt.Sprintf("0.0.0.0:%v", grpcPort), httpOpts,
+	); err != nil {
+		panic(err)
+	}
+
+	if err := rpc.RegisterReviewsServiceHandlerFromEndpoint(
 		ctx, httpServer, fmt.Sprintf("0.0.0.0:%v", grpcPort), httpOpts,
 	); err != nil {
 		panic(err)
@@ -213,7 +229,7 @@ func (s *Server) CreateOrder(ctx context.Context, req *rpc.CreateOrderRequest) (
 		return nil, err
 	}
 
-	order, err := s.GRPCHandlers.CreateOrder(ctx, rpcReq)
+	order, err := s.OrdersGRPCHandlers.CreateOrder(ctx, rpcReq)
 	if err != nil {
 		return nil, GRPCUnknownError(err, nil)
 	}
@@ -233,7 +249,7 @@ func (s *Server) CreateOrder(ctx context.Context, req *rpc.CreateOrderRequest) (
 }
 
 func (s *Server) Orders(ctx context.Context, _ *emptypb.Empty) (*rpc.OrdersResponse, error) {
-	rpcOrders, err := s.GRPCHandlers.Orders(ctx)
+	rpcOrders, err := s.OrdersGRPCHandlers.Orders(ctx)
 	if err != nil {
 		if errors.Is(err, rpctransport.ErrNotFound) {
 			return nil, GRPCNotFoundError(err, nil)
@@ -265,7 +281,7 @@ func (s *Server) Orders(ctx context.Context, _ *emptypb.Empty) (*rpc.OrdersRespo
 }
 
 func (s *Server) Order(ctx context.Context, req *rpc.OrderRequest) (*rpc.OrderResponse, error) {
-	rpcOrder, err := s.GRPCHandlers.OrderByID(ctx, req.ID)
+	rpcOrder, err := s.OrdersGRPCHandlers.OrderByID(ctx, req.ID)
 	if err != nil {
 		if errors.Is(err, rpctransport.ErrNotFound) {
 			return nil, GRPCNotFoundError(err, nil)
@@ -312,11 +328,34 @@ func (s *Server) UpdateOrder(ctx context.Context, req *rpc.UpdateOrderRequest) (
 		return nil, err
 	}
 
-	if err := s.GRPCHandlers.UpdateOrder(ctx, rpcReq); err != nil {
+	if err := s.OrdersGRPCHandlers.UpdateOrder(ctx, rpcReq); err != nil {
 		return nil, GRPCUnknownError(err, nil)
 	}
 
 	return &emptypb.Empty{}, nil
+}
+
+func (s *Server) Reviews(ctx context.Context, _ *emptypb.Empty) (*rpc.ReviewsResponse, error) {
+	rpcReviews, err := s.ReviewsGRPCHandlers.Reviews(ctx)
+	if err != nil {
+		if errors.Is(err, rpctransport.ErrNotFound) {
+			return nil, GRPCNotFoundError(err, nil)
+		}
+
+		return nil, GRPCUnknownError(err, nil)
+	}
+
+	reviews := make([]*rpc.Review, 0, len(rpcReviews))
+	for _, review := range rpcReviews {
+		reviews = append(reviews, &rpc.Review{
+			Text:     review.Text,
+			Name:     review.Name,
+			Rate:     review.Rate,
+			PhotoURL: review.PhotoURL,
+		})
+	}
+
+	return &rpc.ReviewsResponse{Reviews: reviews}, nil
 }
 
 func GRPCValidationError[T GRPCErrors](reason T, err error) error {

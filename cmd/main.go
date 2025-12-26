@@ -16,8 +16,7 @@ import (
 
 	"github.com/ingvarmattis/moving/gen/servergrpc/server"
 	"github.com/ingvarmattis/moving/src/infra/box"
-	rpc "github.com/ingvarmattis/moving/src/rpctransport/moving"
-	"github.com/ingvarmattis/moving/src/services"
+	rpc "github.com/ingvarmattis/moving/src/rpctransport"
 )
 
 func main() {
@@ -35,8 +34,11 @@ func main() {
 		envBox.Config.GRPCServerListenPort,
 		&server.NewServerOptions{
 			ServiceName: envBox.Config.ServiceName,
-			GRPCHandlers: &rpc.Handlers{
-				Service: services.SvcLayer{MovingService: resources.MovingService},
+			OrdersGRPCHandlers: &rpc.OrdersHandlers{
+				OrdersService: resources.OrdersService,
+			},
+			ReviewsGRPCHandlers: &rpc.ReviewsHandlers{
+				ReviewsService: resources.ReviewsService,
 			},
 			Validator:          resources.Validator,
 			Logger:             envBox.Logger,
@@ -46,7 +48,8 @@ func main() {
 	)
 
 	metricsServer := server.NewMetricsServer(
-		envBox.Config.MetricsConfig.Enabled, envBox.Logger, envBox.Config.MetricsConfig.Port)
+		envBox.Config.MetricsConfig.Enabled, envBox.Logger, envBox.Config.MetricsConfig.Port,
+	)
 
 	// working functions
 	workingFunctions := []func() error{

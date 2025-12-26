@@ -6,7 +6,10 @@
   },
   "tags": [
     {
-      "name": "MovingService"
+      "name": "OrdersService"
+    },
+    {
+      "name": "ReviewsService"
     }
   ],
   "consumes": [
@@ -18,7 +21,7 @@
   "paths": {
     "/v1/order/{ID}": {
       "get": {
-        "operationId": "MovingService_Order",
+        "operationId": "OrdersService_Order",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -43,13 +46,13 @@
           }
         ],
         "tags": [
-          "MovingService"
+          "OrdersService"
         ]
       }
     },
     "/v1/orders": {
       "get": {
-        "operationId": "MovingService_Orders",
+        "operationId": "OrdersService_Orders",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -65,13 +68,13 @@
           }
         },
         "tags": [
-          "MovingService"
+          "OrdersService"
         ]
       }
     },
     "/v1/orders/create": {
       "post": {
-        "operationId": "MovingService_CreateOrder",
+        "operationId": "OrdersService_CreateOrder",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -97,13 +100,13 @@
           }
         ],
         "tags": [
-          "MovingService"
+          "OrdersService"
         ]
       }
     },
     "/v1/orders/update": {
       "put": {
-        "operationId": "MovingService_UpdateOrder",
+        "operationId": "OrdersService_UpdateOrder",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -130,7 +133,29 @@
           }
         ],
         "tags": [
-          "MovingService"
+          "OrdersService"
+        ]
+      }
+    },
+    "/v1/reviews": {
+      "get": {
+        "operationId": "ReviewsService_Reviews",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ReviewsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "ReviewsService"
         ]
       }
     }
@@ -282,6 +307,36 @@
         "PROPERTY_SIZE_COMMERCIAL"
       ],
       "default": "PROPERTY_SIZE_UNKNOWN"
+    },
+    "v1Review": {
+      "type": "object",
+      "properties": {
+        "Text": {
+          "type": "string"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "Rate": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "PhotoURL": {
+          "type": "string"
+        }
+      }
+    },
+    "v1ReviewsResponse": {
+      "type": "object",
+      "properties": {
+        "Reviews": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Review"
+          }
+        }
+      }
     },
     "v1UpdateOrderRequest": {
       "type": "object",

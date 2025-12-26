@@ -10,8 +10,9 @@ import "params/create_order.proto";
 import "params/orders.proto";
 import "params/order.proto";
 import "params/update_order.proto";
+import "params/reviews.proto";
 
-service MovingService {
+service OrdersService {
   rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse) {
     option (google.api.http) = {
       post: "/v1/orders/create"
@@ -35,6 +36,14 @@ service MovingService {
     option (google.api.http) = {
       put: "/v1/orders/update"
       body: "*"
+    };
+  }
+}
+
+service ReviewsService {
+  rpc Reviews(google.protobuf.Empty) returns (ReviewsResponse) {
+    option (google.api.http) = {
+      get: "/v1/reviews"
     };
   }
 }

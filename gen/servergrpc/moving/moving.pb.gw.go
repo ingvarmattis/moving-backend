@@ -36,7 +36,7 @@ var (
 	_ = metadata.Join
 )
 
-func request_MovingService_CreateOrder_0(ctx context.Context, marshaler runtime.Marshaler, client MovingServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_OrdersService_CreateOrder_0(ctx context.Context, marshaler runtime.Marshaler, client OrdersServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
 		protoReq CreateOrderRequest
 		metadata runtime.ServerMetadata
@@ -48,7 +48,7 @@ func request_MovingService_CreateOrder_0(ctx context.Context, marshaler runtime.
 	return msg, metadata, err
 }
 
-func local_request_MovingService_CreateOrder_0(ctx context.Context, marshaler runtime.Marshaler, server MovingServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_OrdersService_CreateOrder_0(ctx context.Context, marshaler runtime.Marshaler, server OrdersServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
 		protoReq CreateOrderRequest
 		metadata runtime.ServerMetadata
@@ -60,7 +60,7 @@ func local_request_MovingService_CreateOrder_0(ctx context.Context, marshaler ru
 	return msg, metadata, err
 }
 
-func request_MovingService_Orders_0(ctx context.Context, marshaler runtime.Marshaler, client MovingServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_OrdersService_Orders_0(ctx context.Context, marshaler runtime.Marshaler, client OrdersServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
 		protoReq emptypb.Empty
 		metadata runtime.ServerMetadata
@@ -69,7 +69,7 @@ func request_MovingService_Orders_0(ctx context.Context, marshaler runtime.Marsh
 	return msg, metadata, err
 }
 
-func local_request_MovingService_Orders_0(ctx context.Context, marshaler runtime.Marshaler, server MovingServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_OrdersService_Orders_0(ctx context.Context, marshaler runtime.Marshaler, server OrdersServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
 		protoReq emptypb.Empty
 		metadata runtime.ServerMetadata
@@ -78,7 +78,7 @@ func local_request_MovingService_Orders_0(ctx context.Context, marshaler runtime
 	return msg, metadata, err
 }
 
-func request_MovingService_Order_0(ctx context.Context, marshaler runtime.Marshaler, client MovingServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_OrdersService_Order_0(ctx context.Context, marshaler runtime.Marshaler, client OrdersServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
 		protoReq OrderRequest
 		metadata runtime.ServerMetadata
@@ -96,7 +96,7 @@ func request_MovingService_Order_0(ctx context.Context, marshaler runtime.Marsha
 	return msg, metadata, err
 }
 
-func local_request_MovingService_Order_0(ctx context.Context, marshaler runtime.Marshaler, server MovingServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_OrdersService_Order_0(ctx context.Context, marshaler runtime.Marshaler, server OrdersServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
 		protoReq OrderRequest
 		metadata runtime.ServerMetadata
@@ -114,7 +114,7 @@ func local_request_MovingService_Order_0(ctx context.Context, marshaler runtime.
 	return msg, metadata, err
 }
 
-func request_MovingService_UpdateOrder_0(ctx context.Context, marshaler runtime.Marshaler, client MovingServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_OrdersService_UpdateOrder_0(ctx context.Context, marshaler runtime.Marshaler, client OrdersServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
 		protoReq UpdateOrderRequest
 		metadata runtime.ServerMetadata
@@ -126,7 +126,7 @@ func request_MovingService_UpdateOrder_0(ctx context.Context, marshaler runtime.
 	return msg, metadata, err
 }
 
-func local_request_MovingService_UpdateOrder_0(ctx context.Context, marshaler runtime.Marshaler, server MovingServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_OrdersService_UpdateOrder_0(ctx context.Context, marshaler runtime.Marshaler, server OrdersServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
 		protoReq UpdateOrderRequest
 		metadata runtime.ServerMetadata
@@ -138,99 +138,147 @@ func local_request_MovingService_UpdateOrder_0(ctx context.Context, marshaler ru
 	return msg, metadata, err
 }
 
-// RegisterMovingServiceHandlerServer registers the http handlers for service MovingService to "mux".
-// UnaryRPC     :call MovingServiceServer directly.
+func request_ReviewsService_Reviews_0(ctx context.Context, marshaler runtime.Marshaler, client ReviewsServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq emptypb.Empty
+		metadata runtime.ServerMetadata
+	)
+	msg, err := client.Reviews(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_ReviewsService_Reviews_0(ctx context.Context, marshaler runtime.Marshaler, server ReviewsServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq emptypb.Empty
+		metadata runtime.ServerMetadata
+	)
+	msg, err := server.Reviews(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+// RegisterOrdersServiceHandlerServer registers the http handlers for service OrdersService to "mux".
+// UnaryRPC     :call OrdersServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
-// Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterMovingServiceHandlerFromEndpoint instead.
+// Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterOrdersServiceHandlerFromEndpoint instead.
 // GRPC interceptors will not work for this type of registration. To use interceptors, you must use the "runtime.WithMiddlewares" option in the "runtime.NewServeMux" call.
-func RegisterMovingServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server MovingServiceServer) error {
-	mux.Handle(http.MethodPost, pattern_MovingService_CreateOrder_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+func RegisterOrdersServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server OrdersServiceServer) error {
+	mux.Handle(http.MethodPost, pattern_OrdersService_CreateOrder_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/ingvarmattis.services.moving.v1.MovingService/CreateOrder", runtime.WithHTTPPathPattern("/v1/orders/create"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/ingvarmattis.services.moving.v1.OrdersService/CreateOrder", runtime.WithHTTPPathPattern("/v1/orders/create"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_MovingService_CreateOrder_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_OrdersService_CreateOrder_0(annotatedContext, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		forward_MovingService_CreateOrder_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_OrdersService_CreateOrder_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodGet, pattern_MovingService_Orders_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_OrdersService_Orders_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/ingvarmattis.services.moving.v1.MovingService/Orders", runtime.WithHTTPPathPattern("/v1/orders"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/ingvarmattis.services.moving.v1.OrdersService/Orders", runtime.WithHTTPPathPattern("/v1/orders"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_MovingService_Orders_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_OrdersService_Orders_0(annotatedContext, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		forward_MovingService_Orders_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_OrdersService_Orders_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodGet, pattern_MovingService_Order_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_OrdersService_Order_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/ingvarmattis.services.moving.v1.MovingService/Order", runtime.WithHTTPPathPattern("/v1/order/{ID}"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/ingvarmattis.services.moving.v1.OrdersService/Order", runtime.WithHTTPPathPattern("/v1/order/{ID}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_MovingService_Order_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_OrdersService_Order_0(annotatedContext, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		forward_MovingService_Order_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_OrdersService_Order_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodPut, pattern_MovingService_UpdateOrder_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodPut, pattern_OrdersService_UpdateOrder_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/ingvarmattis.services.moving.v1.MovingService/UpdateOrder", runtime.WithHTTPPathPattern("/v1/orders/update"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/ingvarmattis.services.moving.v1.OrdersService/UpdateOrder", runtime.WithHTTPPathPattern("/v1/orders/update"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_MovingService_UpdateOrder_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_OrdersService_UpdateOrder_0(annotatedContext, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		forward_MovingService_UpdateOrder_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_OrdersService_UpdateOrder_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
 
 	return nil
 }
 
-// RegisterMovingServiceHandlerFromEndpoint is same as RegisterMovingServiceHandler but
+// RegisterReviewsServiceHandlerServer registers the http handlers for service ReviewsService to "mux".
+// UnaryRPC     :call ReviewsServiceServer directly.
+// StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
+// Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterReviewsServiceHandlerFromEndpoint instead.
+// GRPC interceptors will not work for this type of registration. To use interceptors, you must use the "runtime.WithMiddlewares" option in the "runtime.NewServeMux" call.
+func RegisterReviewsServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server ReviewsServiceServer) error {
+	mux.Handle(http.MethodGet, pattern_ReviewsService_Reviews_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/ingvarmattis.services.moving.v1.ReviewsService/Reviews", runtime.WithHTTPPathPattern("/v1/reviews"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_ReviewsService_Reviews_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_ReviewsService_Reviews_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+
+	return nil
+}
+
+// RegisterOrdersServiceHandlerFromEndpoint is same as RegisterOrdersServiceHandler but
 // automatically dials to "endpoint" and closes the connection when "ctx" gets done.
-func RegisterMovingServiceHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
+func RegisterOrdersServiceHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
 	conn, err := grpc.NewClient(endpoint, opts...)
 	if err != nil {
 		return err
@@ -249,102 +297,166 @@ func RegisterMovingServiceHandlerFromEndpoint(ctx context.Context, mux *runtime.
 			}
 		}()
 	}()
-	return RegisterMovingServiceHandler(ctx, mux, conn)
+	return RegisterOrdersServiceHandler(ctx, mux, conn)
 }
 
-// RegisterMovingServiceHandler registers the http handlers for service MovingService to "mux".
+// RegisterOrdersServiceHandler registers the http handlers for service OrdersService to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
-func RegisterMovingServiceHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
-	return RegisterMovingServiceHandlerClient(ctx, mux, NewMovingServiceClient(conn))
+func RegisterOrdersServiceHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+	return RegisterOrdersServiceHandlerClient(ctx, mux, NewOrdersServiceClient(conn))
 }
 
-// RegisterMovingServiceHandlerClient registers the http handlers for service MovingService
-// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "MovingServiceClient".
-// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "MovingServiceClient"
+// RegisterOrdersServiceHandlerClient registers the http handlers for service OrdersService
+// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "OrdersServiceClient".
+// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "OrdersServiceClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
-// "MovingServiceClient" to call the correct interceptors. This client ignores the HTTP middlewares.
-func RegisterMovingServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client MovingServiceClient) error {
-	mux.Handle(http.MethodPost, pattern_MovingService_CreateOrder_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+// "OrdersServiceClient" to call the correct interceptors. This client ignores the HTTP middlewares.
+func RegisterOrdersServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client OrdersServiceClient) error {
+	mux.Handle(http.MethodPost, pattern_OrdersService_CreateOrder_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/ingvarmattis.services.moving.v1.MovingService/CreateOrder", runtime.WithHTTPPathPattern("/v1/orders/create"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/ingvarmattis.services.moving.v1.OrdersService/CreateOrder", runtime.WithHTTPPathPattern("/v1/orders/create"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_MovingService_CreateOrder_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_OrdersService_CreateOrder_0(annotatedContext, inboundMarshaler, client, req, pathParams)
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		forward_MovingService_CreateOrder_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_OrdersService_CreateOrder_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodGet, pattern_MovingService_Orders_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_OrdersService_Orders_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/ingvarmattis.services.moving.v1.MovingService/Orders", runtime.WithHTTPPathPattern("/v1/orders"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/ingvarmattis.services.moving.v1.OrdersService/Orders", runtime.WithHTTPPathPattern("/v1/orders"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_MovingService_Orders_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_OrdersService_Orders_0(annotatedContext, inboundMarshaler, client, req, pathParams)
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		forward_MovingService_Orders_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_OrdersService_Orders_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodGet, pattern_MovingService_Order_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_OrdersService_Order_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/ingvarmattis.services.moving.v1.MovingService/Order", runtime.WithHTTPPathPattern("/v1/order/{ID}"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/ingvarmattis.services.moving.v1.OrdersService/Order", runtime.WithHTTPPathPattern("/v1/order/{ID}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_MovingService_Order_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_OrdersService_Order_0(annotatedContext, inboundMarshaler, client, req, pathParams)
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		forward_MovingService_Order_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_OrdersService_Order_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodPut, pattern_MovingService_UpdateOrder_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodPut, pattern_OrdersService_UpdateOrder_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/ingvarmattis.services.moving.v1.MovingService/UpdateOrder", runtime.WithHTTPPathPattern("/v1/orders/update"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/ingvarmattis.services.moving.v1.OrdersService/UpdateOrder", runtime.WithHTTPPathPattern("/v1/orders/update"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_MovingService_UpdateOrder_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_OrdersService_UpdateOrder_0(annotatedContext, inboundMarshaler, client, req, pathParams)
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		forward_MovingService_UpdateOrder_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_OrdersService_UpdateOrder_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
 	return nil
 }
 
 var (
-	pattern_MovingService_CreateOrder_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orders", "create"}, ""))
-	pattern_MovingService_Orders_0      = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "orders"}, ""))
-	pattern_MovingService_Order_0       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1", "order", "ID"}, ""))
-	pattern_MovingService_UpdateOrder_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orders", "update"}, ""))
+	pattern_OrdersService_CreateOrder_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orders", "create"}, ""))
+	pattern_OrdersService_Orders_0      = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "orders"}, ""))
+	pattern_OrdersService_Order_0       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1", "order", "ID"}, ""))
+	pattern_OrdersService_UpdateOrder_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orders", "update"}, ""))
 )
 
 var (
-	forward_MovingService_CreateOrder_0 = runtime.ForwardResponseMessage
-	forward_MovingService_Orders_0      = runtime.ForwardResponseMessage
-	forward_MovingService_Order_0       = runtime.ForwardResponseMessage
-	forward_MovingService_UpdateOrder_0 = runtime.ForwardResponseMessage
+	forward_OrdersService_CreateOrder_0 = runtime.ForwardResponseMessage
+	forward_OrdersService_Orders_0      = runtime.ForwardResponseMessage
+	forward_OrdersService_Order_0       = runtime.ForwardResponseMessage
+	forward_OrdersService_UpdateOrder_0 = runtime.ForwardResponseMessage
+)
+
+// RegisterReviewsServiceHandlerFromEndpoint is same as RegisterReviewsServiceHandler but
+// automatically dials to "endpoint" and closes the connection when "ctx" gets done.
+func RegisterReviewsServiceHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
+	conn, err := grpc.NewClient(endpoint, opts...)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			if cerr := conn.Close(); cerr != nil {
+				grpclog.Errorf("Failed to close conn to %s: %v", endpoint, cerr)
+			}
+			return
+		}
+		go func() {
+			<-ctx.Done()
+			if cerr := conn.Close(); cerr != nil {
+				grpclog.Errorf("Failed to close conn to %s: %v", endpoint, cerr)
+			}
+		}()
+	}()
+	return RegisterReviewsServiceHandler(ctx, mux, conn)
+}
+
+// RegisterReviewsServiceHandler registers the http handlers for service ReviewsService to "mux".
+// The handlers forward requests to the grpc endpoint over "conn".
+func RegisterReviewsServiceHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+	return RegisterReviewsServiceHandlerClient(ctx, mux, NewReviewsServiceClient(conn))
+}
+
+// RegisterReviewsServiceHandlerClient registers the http handlers for service ReviewsService
+// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "ReviewsServiceClient".
+// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "ReviewsServiceClient"
+// doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
+// "ReviewsServiceClient" to call the correct interceptors. This client ignores the HTTP middlewares.
+func RegisterReviewsServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client ReviewsServiceClient) error {
+	mux.Handle(http.MethodGet, pattern_ReviewsService_Reviews_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/ingvarmattis.services.moving.v1.ReviewsService/Reviews", runtime.WithHTTPPathPattern("/v1/reviews"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_ReviewsService_Reviews_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_ReviewsService_Reviews_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	return nil
+}
+
+var (
+	pattern_ReviewsService_Reviews_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "reviews"}, ""))
+)
+
+var (
+	forward_ReviewsService_Reviews_0 = runtime.ForwardResponseMessage
 )

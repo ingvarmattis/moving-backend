@@ -6,13 +6,16 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/ingvarmattis/moving/src/infra/interceptors"
-	movingrepo "github.com/ingvarmattis/moving/src/repositories/moving"
+	movingrepo "github.com/ingvarmattis/moving/src/repositories/orders"
+	reviewsrepo "github.com/ingvarmattis/moving/src/repositories/reviews"
 	rpcvalidator "github.com/ingvarmattis/moving/src/rpctransport/validator"
-	movingsvc "github.com/ingvarmattis/moving/src/services/moving"
+	orderssvc "github.com/ingvarmattis/moving/src/services/orders"
+	reviewssvc "github.com/ingvarmattis/moving/src/services/reviews"
 )
 
 type Resources struct {
-	MovingService *movingsvc.Service
+	OrdersService  *orderssvc.Service
+	ReviewsService *reviewssvc.Service
 
 	Validator *validator.Validate
 
@@ -21,10 +24,12 @@ type Resources struct {
 }
 
 func NewResources(envBox *Env) *Resources {
-	movingService := movingsvc.NewService(movingrepo.NewPostgres(envBox.PGXPool))
+	ordersService := orderssvc.NewService(movingrepo.NewPostgres(envBox.PGXPool))
+	reviewsService := reviewssvc.NewService(reviewsrepo.NewPostgres(envBox.PGXPool))
 
 	return &Resources{
-		MovingService: movingService,
+		OrdersService:  ordersService,
+		ReviewsService: reviewsService,
 
 		Validator: rpcvalidator.MustValidate(),
 

@@ -3,16 +3,25 @@ package services
 import (
 	"context"
 
-	svc "github.com/ingvarmattis/moving/src/services/moving"
+	"github.com/ingvarmattis/moving/src/services/orders"
+	"github.com/ingvarmattis/moving/src/services/reviews"
 )
 
-type SvcLayer struct {
-	MovingService MovingService
+type OrdersHandlers struct {
+	OrdersService OrdersService
 }
 
-type MovingService interface {
-	CreateOrder(ctx context.Context, req *svc.CreateOrderRequest) (*svc.Order, error)
-	Orders(ctx context.Context) ([]*svc.Order, error)
-	OrderByID(ctx context.Context, id uint64) (*svc.Order, error)
-	UpdateOrder(ctx context.Context, req *svc.UpdateOrderRequest) error
+type ReviewsHandlers struct {
+	ReviewsService ReviewsService
+}
+
+type OrdersService interface {
+	CreateOrder(ctx context.Context, req *orders.CreateOrderRequest) (*orders.Order, error)
+	Orders(ctx context.Context) ([]*orders.Order, error)
+	OrderByID(ctx context.Context, id uint64) (*orders.Order, error)
+	UpdateOrder(ctx context.Context, req *orders.UpdateOrderRequest) error
+}
+
+type ReviewsService interface {
+	Reviews(ctx context.Context) ([]reviews.Review, error)
 }
