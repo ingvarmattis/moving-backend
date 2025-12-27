@@ -24,7 +24,8 @@ import (
 
 	rpc "github.com/ingvarmattis/moving/gen/servergrpc/moving"
 	"github.com/ingvarmattis/moving/src/infra/utils"
-	"github.com/ingvarmattis/moving/src/rpctransport"
+	"github.com/ingvarmattis/moving/src/transport/orders"
+	"github.com/ingvarmattis/moving/src/transport/reviews"
 )
 
 const domain = "moving"
@@ -35,14 +36,14 @@ var (
 )
 
 type OrdersGRPCHandlers interface {
-	CreateOrder(ctx context.Context, req *rpctransport.CreateOrderRequest) (*rpctransport.Order, error)
-	Orders(ctx context.Context) ([]*rpctransport.Order, error)
-	OrderByID(ctx context.Context, id uint64) (*rpctransport.Order, error)
-	UpdateOrder(ctx context.Context, req *rpctransport.UpdateOrderRequest) error
+	CreateOrder(ctx context.Context, req *orders.CreateOrderRequest) (*orders.Order, error)
+	Orders(ctx context.Context) ([]*orders.Order, error)
+	OrderByID(ctx context.Context, id uint64) (*orders.Order, error)
+	UpdateOrder(ctx context.Context, req *orders.UpdateOrderRequest) error
 }
 
 type ReviewsGRPCHandlers interface {
-	Reviews(ctx context.Context) ([]rpctransport.Review, error)
+	Reviews(ctx context.Context) ([]reviews.Review, error)
 }
 
 type GRPCErrors interface {
@@ -214,8 +215,8 @@ func NewServer(ctx context.Context, grpcPort int, opts *NewServerOptions) *Serve
 }
 
 func (s *Server) CreateOrder(ctx context.Context, req *rpc.CreateOrderRequest) (*rpc.CreateOrderResponse, error) {
-	rpcReq := &rpctransport.CreateOrderRequest{
-		PropertySize:   rpctransport.PropertySize(req.PropertySize),
+	rpcReq := &orders.CreateOrderRequest{
+		PropertySize:   orders.PropertySize(req.PropertySize),
 		MoveDate:       req.MoveDate.AsTime(),
 		Name:           req.Name,
 		Email:          req.Email,
@@ -251,19 +252,19 @@ func (s *Server) CreateOrder(ctx context.Context, req *rpc.CreateOrderRequest) (
 func (s *Server) Orders(ctx context.Context, _ *emptypb.Empty) (*rpc.OrdersResponse, error) {
 	rpcOrders, err := s.OrdersGRPCHandlers.Orders(ctx)
 	if err != nil {
-		if errors.Is(err, rpctransport.ErrNotFound) {
+		if errors.Is(err, orders.ErrNotFound) {
 			return nil, GRPCNotFoundError(err, nil)
 		}
 
 		return nil, GRPCUnknownError(err, nil)
 	}
 
-	orders := make([]*rpc.Order, 0, len(rpcOrders))
+	ordrs := make([]*rpc.Order, 0, len(rpcOrders))
 	for _, order := range rpcOrders {
 		propertySize := rpc.PropertySize(order.PropertySize)
 		orderStatus := rpc.OrderStatus(order.OrderStatus)
 
-		orders = append(orders, &rpc.Order{
+		ordrs = append(ordrs, &rpc.Order{
 			ID:             order.ID,
 			PropertySize:   &propertySize,
 			OrderStatus:    &orderStatus,
@@ -277,13 +278,13 @@ func (s *Server) Orders(ctx context.Context, _ *emptypb.Empty) (*rpc.OrdersRespo
 		})
 	}
 
-	return &rpc.OrdersResponse{Orders: orders}, nil
+	return &rpc.OrdersResponse{Orders: ordrs}, nil
 }
 
 func (s *Server) Order(ctx context.Context, req *rpc.OrderRequest) (*rpc.OrderResponse, error) {
 	rpcOrder, err := s.OrdersGRPCHandlers.OrderByID(ctx, req.ID)
 	if err != nil {
-		if errors.Is(err, rpctransport.ErrNotFound) {
+		if errors.Is(err, orders.ErrNotFound) {
 			return nil, GRPCNotFoundError(err, nil)
 		}
 
@@ -308,10 +309,10 @@ func (s *Server) Order(ctx context.Context, req *rpc.OrderRequest) (*rpc.OrderRe
 }
 
 func (s *Server) UpdateOrder(ctx context.Context, req *rpc.UpdateOrderRequest) (*emptypb.Empty, error) {
-	rpcReq := &rpctransport.UpdateOrderRequest{
+	rpcReq := &orders.UpdateOrderRequest{
 		ID:             req.GetID(),
-		PropertySize:   utils.PtrIfNotZero(rpctransport.PropertySize(req.GetPropertySize())),
-		OrderStatus:    utils.PtrIfNotZero(rpctransport.OrderStatus(req.GetOrderStatus())),
+		PropertySize:   utils.PtrIfNotZero(orders.PropertySize(req.GetPropertySize())),
+		OrderStatus:    utils.PtrIfNotZero(orders.OrderStatus(req.GetOrderStatus())),
 		Name:           utils.PtrIfNotZero(req.GetName()),
 		Email:          utils.PtrIfNotZero(req.GetEmail()),
 		Phone:          utils.PtrIfNotZero(req.GetPhone()),
@@ -338,16 +339,16 @@ func (s *Server) UpdateOrder(ctx context.Context, req *rpc.UpdateOrderRequest) (
 func (s *Server) Reviews(ctx context.Context, _ *emptypb.Empty) (*rpc.ReviewsResponse, error) {
 	rpcReviews, err := s.ReviewsGRPCHandlers.Reviews(ctx)
 	if err != nil {
-		if errors.Is(err, rpctransport.ErrNotFound) {
+		if errors.Is(err, reviews.ErrNotFound) {
 			return nil, GRPCNotFoundError(err, nil)
 		}
 
 		return nil, GRPCUnknownError(err, nil)
 	}
 
-	reviews := make([]*rpc.Review, 0, len(rpcReviews))
+	rvws := make([]*rpc.Review, 0, len(rpcReviews))
 	for _, review := range rpcReviews {
-		reviews = append(reviews, &rpc.Review{
+		rvws = append(rvws, &rpc.Review{
 			Text:     review.Text,
 			Name:     review.Name,
 			Rate:     review.Rate,
@@ -355,7 +356,7 @@ func (s *Server) Reviews(ctx context.Context, _ *emptypb.Empty) (*rpc.ReviewsRes
 		})
 	}
 
-	return &rpc.ReviewsResponse{Reviews: reviews}, nil
+	return &rpc.ReviewsResponse{Reviews: rvws}, nil
 }
 
 func GRPCValidationError[T GRPCErrors](reason T, err error) error {

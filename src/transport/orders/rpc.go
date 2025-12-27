@@ -1,4 +1,4 @@
-package rpctransport
+package orders
 
 import (
 	"context"
@@ -9,20 +9,15 @@ import (
 	"github.com/ingvarmattis/moving/src/infra/utils"
 	"github.com/ingvarmattis/moving/src/services"
 	orderssvc "github.com/ingvarmattis/moving/src/services/orders"
-	reviewssvc "github.com/ingvarmattis/moving/src/services/reviews"
 )
 
 var ErrNotFound = errors.New("not found")
 
-type OrdersHandlers struct {
+type Handlers struct {
 	OrdersService services.OrdersService
 }
 
-type ReviewsHandlers struct {
-	ReviewsService services.ReviewsService
-}
-
-func (s *OrdersHandlers) CreateOrder(ctx context.Context, req *CreateOrderRequest) (*Order, error) {
+func (s *Handlers) CreateOrder(ctx context.Context, req *CreateOrderRequest) (*Order, error) {
 	svcReq := &orderssvc.CreateOrderRequest{
 		PropertySize:   orderssvc.PropertySize(req.PropertySize),
 		MoveDate:       req.MoveDate,
@@ -53,7 +48,7 @@ func (s *OrdersHandlers) CreateOrder(ctx context.Context, req *CreateOrderReques
 	}, nil
 }
 
-func (s *OrdersHandlers) Orders(ctx context.Context) ([]*Order, error) {
+func (s *Handlers) Orders(ctx context.Context) ([]*Order, error) {
 	repoOrders, err := s.OrdersService.Orders(ctx)
 	if err != nil {
 		if errors.Is(err, orderssvc.ErrNotFound) {
@@ -87,7 +82,7 @@ func (s *OrdersHandlers) Orders(ctx context.Context) ([]*Order, error) {
 	return orders, nil
 }
 
-func (s *OrdersHandlers) OrderByID(ctx context.Context, id uint64) (*Order, error) {
+func (s *Handlers) OrderByID(ctx context.Context, id uint64) (*Order, error) {
 	order, err := s.OrdersService.OrderByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, orderssvc.ErrNotFound) {
@@ -111,7 +106,7 @@ func (s *OrdersHandlers) OrderByID(ctx context.Context, id uint64) (*Order, erro
 	}, nil
 }
 
-func (s *OrdersHandlers) UpdateOrder(ctx context.Context, req *UpdateOrderRequest) error {
+func (s *Handlers) UpdateOrder(ctx context.Context, req *UpdateOrderRequest) error {
 	svcReq := &orderssvc.UpdateOrderRequest{
 		ID:             req.ID,
 		MoveDate:       req.MoveDate,
@@ -195,35 +190,4 @@ type UpdateOrderRequest struct {
 	MoveFrom       *string
 	MoveTo         *string
 	AdditionalInfo *string
-}
-
-func (s *ReviewsHandlers) Reviews(ctx context.Context) ([]Review, error) {
-	svcReviews, err := s.ReviewsService.Reviews(ctx)
-	if err != nil {
-		if errors.Is(err, reviewssvc.ErrNotFound) {
-			return nil, ErrNotFound
-		}
-
-		return nil, fmt.Errorf("failed get reviews | %w", err)
-	}
-
-	reviews := make([]Review, 0, len(svcReviews))
-
-	for _, svcReview := range svcReviews {
-		reviews = append(reviews, Review{
-			Text:     svcReview.Text,
-			Name:     svcReview.Name,
-			PhotoURL: svcReview.PhotoURL,
-			Rate:     svcReview.Rate,
-		})
-	}
-
-	return reviews, nil
-}
-
-type Review struct {
-	Text     string
-	Name     string
-	PhotoURL string
-	Rate     int32
 }

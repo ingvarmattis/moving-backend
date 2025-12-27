@@ -16,7 +16,8 @@ import (
 
 	"github.com/ingvarmattis/moving/gen/servergrpc/server"
 	"github.com/ingvarmattis/moving/src/infra/box"
-	rpc "github.com/ingvarmattis/moving/src/rpctransport"
+	"github.com/ingvarmattis/moving/src/transport/orders"
+	"github.com/ingvarmattis/moving/src/transport/reviews"
 )
 
 func main() {
@@ -34,10 +35,10 @@ func main() {
 		envBox.Config.GRPCServerListenPort,
 		&server.NewServerOptions{
 			ServiceName: envBox.Config.ServiceName,
-			OrdersGRPCHandlers: &rpc.OrdersHandlers{
+			OrdersGRPCHandlers: &orders.Handlers{
 				OrdersService: resources.OrdersService,
 			},
-			ReviewsGRPCHandlers: &rpc.ReviewsHandlers{
+			ReviewsGRPCHandlers: &reviews.Handlers{
 				ReviewsService: resources.ReviewsService,
 			},
 			Validator:          resources.Validator,

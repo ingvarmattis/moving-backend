@@ -8,9 +8,9 @@ import (
 	"github.com/ingvarmattis/moving/src/infra/interceptors"
 	movingrepo "github.com/ingvarmattis/moving/src/repositories/orders"
 	reviewsrepo "github.com/ingvarmattis/moving/src/repositories/reviews"
-	rpcvalidator "github.com/ingvarmattis/moving/src/rpctransport/validator"
 	orderssvc "github.com/ingvarmattis/moving/src/services/orders"
 	reviewssvc "github.com/ingvarmattis/moving/src/services/reviews"
+	rpcvalidator "github.com/ingvarmattis/moving/src/transport/validator"
 )
 
 type Resources struct {
