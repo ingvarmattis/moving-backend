@@ -22,9 +22,9 @@ func NewPostgres(pool *pgxpool.Pool) *Postgres {
 func (p *Postgres) Reviews(ctx context.Context) ([]*Review, error) {
 	query := `
 select
-	id, name, rate, photo_url, text, created_at, updated_at
+	id, name, rate, photo_url, text, link, created_at, updated_at
 from moving.reviews
-order by created_at desc
+order by id
 `
 
 	rows, err := p.pool.Query(ctx, query)
@@ -40,7 +40,7 @@ order by created_at desc
 
 		if err = rows.Scan(
 			&review.ID, &review.Name, &review.Rate, &review.PhotoURL,
-			&review.Text, &review.CreatedAt, &review.UpdatedAt,
+			&review.Text, &review.URL, &review.CreatedAt, &review.UpdatedAt,
 		); err != nil {
 			return nil, fmt.Errorf("failed scan review | %w", err)
 		}
@@ -65,6 +65,7 @@ type Review struct {
 	Text      string
 	Name      string
 	PhotoURL  string
+	URL       string
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }

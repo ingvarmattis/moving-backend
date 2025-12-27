@@ -1,0 +1,382 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "service.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "OrdersService"
+    },
+    {
+      "name": "ReviewsService"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/order/{ID}": {
+      "get": {
+        "operationId": "OrdersService_Order",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1OrderResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "ID",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "OrdersService"
+        ]
+      }
+    },
+    "/v1/orders": {
+      "get": {
+        "operationId": "OrdersService_Orders",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1OrdersResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "OrdersService"
+        ]
+      }
+    },
+    "/v1/orders/create": {
+      "post": {
+        "operationId": "OrdersService_CreateOrder",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CreateOrderResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1CreateOrderRequest"
+            }
+          }
+        ],
+        "tags": [
+          "OrdersService"
+        ]
+      }
+    },
+    "/v1/orders/update": {
+      "put": {
+        "operationId": "OrdersService_UpdateOrder",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UpdateOrderRequest"
+            }
+          }
+        ],
+        "tags": [
+          "OrdersService"
+        ]
+      }
+    },
+    "/v1/reviews": {
+      "get": {
+        "operationId": "ReviewsService_Reviews",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ReviewsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "ReviewsService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "movingv1Order": {
+      "type": "object",
+      "properties": {
+        "ID": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "PropertySize": {
+          "$ref": "#/definitions/v1PropertySize"
+        },
+        "OrderStatus": {
+          "$ref": "#/definitions/v1OrderStatus"
+        },
+        "MoveDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "Email": {
+          "type": "string"
+        },
+        "Phone": {
+          "type": "string"
+        },
+        "MoveFrom": {
+          "type": "string"
+        },
+        "MoveTo": {
+          "type": "string"
+        },
+        "AdditionalInfo": {
+          "type": "string"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1CreateOrderRequest": {
+      "type": "object",
+      "properties": {
+        "PropertySize": {
+          "$ref": "#/definitions/v1PropertySize"
+        },
+        "MoveDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "Email": {
+          "type": "string"
+        },
+        "Phone": {
+          "type": "string"
+        },
+        "MoveFrom": {
+          "type": "string"
+        },
+        "MoveTo": {
+          "type": "string"
+        },
+        "AdditionalInfo": {
+          "type": "string"
+        }
+      }
+    },
+    "v1CreateOrderResponse": {
+      "type": "object",
+      "properties": {
+        "Order": {
+          "$ref": "#/definitions/movingv1Order"
+        }
+      }
+    },
+    "v1OrderResponse": {
+      "type": "object",
+      "properties": {
+        "Order": {
+          "$ref": "#/definitions/movingv1Order"
+        }
+      }
+    },
+    "v1OrderStatus": {
+      "type": "string",
+      "enum": [
+        "ORDER_STATUS_UNKNOWN",
+        "ORDER_STATUS_CREATED",
+        "ORDER_STATUS_REJECTED",
+        "ORDER_STATUS_IN_PROGRESS",
+        "ORDER_STATUS_DONE"
+      ],
+      "default": "ORDER_STATUS_UNKNOWN"
+    },
+    "v1OrdersResponse": {
+      "type": "object",
+      "properties": {
+        "Orders": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/movingv1Order"
+          }
+        }
+      }
+    },
+    "v1PropertySize": {
+      "type": "string",
+      "enum": [
+        "PROPERTY_SIZE_UNKNOWN",
+        "PROPERTY_SIZE_STUDIO",
+        "PROPERTY_SIZE_1_BEDROOM",
+        "PROPERTY_SIZE_2_BEDROOMS",
+        "PROPERTY_SIZE_3_BEDROOMS",
+        "PROPERTY_SIZE_4_PLUS_BEDROOMS",
+        "PROPERTY_SIZE_COMMERCIAL"
+      ],
+      "default": "PROPERTY_SIZE_UNKNOWN"
+    },
+    "v1Review": {
+      "type": "object",
+      "properties": {
+        "Text": {
+          "type": "string"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "Rate": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "PhotoURL": {
+          "type": "string"
+        },
+        "URL": {
+          "type": "string"
+        }
+      }
+    },
+    "v1ReviewsResponse": {
+      "type": "object",
+      "properties": {
+        "Reviews": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Review"
+          }
+        }
+      }
+    },
+    "v1UpdateOrderRequest": {
+      "type": "object",
+      "properties": {
+        "ID": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "PropertySize": {
+          "$ref": "#/definitions/v1PropertySize"
+        },
+        "OrderStatus": {
+          "$ref": "#/definitions/v1OrderStatus"
+        },
+        "MoveDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "Email": {
+          "type": "string"
+        },
+        "Phone": {
+          "type": "string"
+        },
+        "MoveFrom": {
+          "type": "string"
+        },
+        "MoveTo": {
+          "type": "string"
+        },
+        "AdditionalInfo": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

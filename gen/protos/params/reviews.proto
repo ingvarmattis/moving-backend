@@ -7,8 +7,9 @@ option go_package = "./gen/servergrpc/moving;servergrpc";
 message Review {
   string Text = 1;
   string Name = 2;
-  int32 Rate = 3;
+  int32  Rate = 3;
   string PhotoURL = 4;
+  string URL = 5;
 }
 
 message ReviewsResponse {

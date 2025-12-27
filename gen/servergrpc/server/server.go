@@ -353,6 +353,7 @@ func (s *Server) Reviews(ctx context.Context, _ *emptypb.Empty) (*rpc.ReviewsRes
 			Name:     review.Name,
 			Rate:     review.Rate,
 			PhotoURL: review.PhotoURL,
+			URL:      review.URL,
 		})
 	}
 

@@ -32,6 +32,7 @@ func (s *Handlers) Reviews(ctx context.Context) ([]Review, error) {
 			Text:     svcReview.Text,
 			Name:     svcReview.Name,
 			PhotoURL: svcReview.PhotoURL,
+			URL:      svcReview.URL,
 			Rate:     svcReview.Rate,
 		})
 	}
@@ -43,5 +44,6 @@ type Review struct {
 	Text     string
 	Name     string
 	PhotoURL string
+	URL      string
 	Rate     int32
 }

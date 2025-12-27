@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v5.27.0
-// source: moving.proto
+// source: service.proto
 
 package servergrpc
 
@@ -232,7 +232,7 @@ var OrdersService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "moving.proto",
+	Metadata: "service.proto",
 }
 
 const (
@@ -334,5 +334,5 @@ var ReviewsService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "moving.proto",
+	Metadata: "service.proto",
 }

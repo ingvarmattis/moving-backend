@@ -41,6 +41,7 @@ func (s *Service) Reviews(ctx context.Context) ([]Review, error) {
 			Text:     repoOrder.Text,
 			Name:     repoOrder.Name,
 			PhotoURL: repoOrder.PhotoURL,
+			URL:      repoOrder.URL,
 			Rate:     repoOrder.Rate,
 		})
 	}
@@ -52,5 +53,6 @@ type Review struct {
 	Text     string
 	Name     string
 	PhotoURL string
+	URL      string
 	Rate     int32
 }
