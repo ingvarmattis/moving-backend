@@ -18,13 +18,20 @@ var (
 	errInvalidAuthToken    = errors.New("invalid auth token")
 )
 
-func UnaryServerAuthInterceptor(validTokens []string) grpc.UnaryServerInterceptor {
+var adminMethods = map[string]struct{}{
+	"/ingvarmattis.services.moving.v1.OrdersService/Orders":      {},
+	"/ingvarmattis.services.moving.v1.OrdersService/Order":       {},
+	"/ingvarmattis.services.moving.v1.OrdersService/UpdateOrder": {},
+}
+
+func UnaryServerAuthInterceptor(clientTokens, adminTokens []string) grpc.UnaryServerInterceptor {
 	const (
 		authKey      = "authorization"
 		bearerPrefix = "Bearer "
 	)
 
-	validTokensMap := utils.ToMap(validTokens)
+	clientTokensMap := utils.ToMap(clientTokens)
+	adminTokensMap := utils.ToMap(adminTokens)
 
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		md, ok := metadata.FromIncomingContext(ctx)
@@ -43,10 +50,23 @@ func UnaryServerAuthInterceptor(validTokens []string) grpc.UnaryServerIntercepto
 		}
 
 		token := strings.TrimPrefix(mdKey[0], bearerPrefix)
-		if _, ok = validTokensMap[token]; !ok {
-			return nil, status.Error(codes.Unauthenticated, errInvalidAuthToken.Error())
+
+		if _, ok = adminMethods[info.FullMethod]; ok {
+			if _, ok = adminTokensMap[token]; !ok {
+				return nil, status.Error(codes.Unauthenticated, errInvalidAuthToken.Error())
+			}
+
+			return handler(ctx, req)
 		}
 
-		return handler(ctx, req)
+		if _, ok = adminTokensMap[token]; ok {
+			return handler(ctx, req)
+		}
+
+		if _, ok = clientTokensMap[token]; ok {
+			return handler(ctx, req)
+		}
+
+		return nil, status.Error(codes.Unauthenticated, errInvalidAuthToken.Error())
 	}
 }

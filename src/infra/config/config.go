@@ -52,5 +52,6 @@ type TracingConfig struct {
 }
 
 type AuthConfig struct {
-	Tokens []string `envconfig:"MOVING_SERVICE_AUTH_TOKENS" required:"true"`
+	ClientTokens []string `envconfig:"MOVING_SERVICE_CLIENT_AUTH_TOKENS" required:"true"`
+	AdminTokens  []string `envconfig:"MOVING_SERVICE_ADMIN_AUTH_TOKENS" required:"true"`
 }

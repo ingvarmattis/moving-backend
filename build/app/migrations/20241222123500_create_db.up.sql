@@ -23,8 +23,8 @@ create type moving.order_status_enum as enum (
 create table if not exists moving.orders (
     id              serial                    primary key,
     name            varchar(100)              not null,
-    email           varchar(255)              not null,
-    phone           varchar(20),
+    email           varchar(255),
+    phone           varchar(20)               not null,
     move_date       date                      not null,
     move_from       varchar(255)              not null,
     move_to         varchar(255)              not null,

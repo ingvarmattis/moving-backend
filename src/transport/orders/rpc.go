@@ -159,7 +159,7 @@ type CreateOrderRequest struct {
 	PropertySize   PropertySize
 	MoveDate       time.Time
 	Name           string
-	Email          string
+	Email          *string
 	Phone          string
 	MoveFrom       string
 	MoveTo         string
@@ -172,7 +172,7 @@ type Order struct {
 	OrderStatus    OrderStatus
 	MoveDate       time.Time
 	Name           string
-	Email          string
+	Email          *string
 	Phone          string
 	MoveFrom       string
 	MoveTo         string

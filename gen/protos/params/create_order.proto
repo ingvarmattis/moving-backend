@@ -12,7 +12,7 @@ message CreateOrderRequest {
   PropertySize PropertySize = 1;
   google.protobuf.Timestamp MoveDate = 2;
   string Name = 3;
-  string Email = 4;
+  optional string Email = 4;
   string Phone = 5;
   string MoveFrom = 6;
   string MoveTo = 7;

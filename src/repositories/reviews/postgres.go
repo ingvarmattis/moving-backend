@@ -22,7 +22,7 @@ func NewPostgres(pool *pgxpool.Pool) *Postgres {
 func (p *Postgres) Reviews(ctx context.Context) ([]*Review, error) {
 	query := `
 select
-	id, name, rate, photo_url, text, link, created_at, updated_at
+	id, name, rate, photo_url, text, review_url, created_at, updated_at
 from moving.reviews
 order by id
 `

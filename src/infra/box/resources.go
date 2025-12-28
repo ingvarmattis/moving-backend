@@ -45,7 +45,9 @@ func provideUnaryGRPCInterceptors(envBox *Env) []grpc.UnaryServerInterceptor {
 		interceptors.UnaryServerMetricsInterceptor(envBox.Config.MetricsConfig.Enabled, envBox.Config.ServiceName),
 		interceptors.UnaryServerTraceInterceptor(envBox.Tracer, envBox.Config.ServiceName),
 		interceptors.UnaryServerLogInterceptor(logger, envBox.Config.Debug),
-		interceptors.UnaryServerAuthInterceptor(envBox.Config.AuthConfig.Tokens),
+		interceptors.UnaryServerAuthInterceptor(
+			envBox.Config.AuthConfig.ClientTokens, envBox.Config.AuthConfig.AdminTokens,
+		),
 		interceptors.UnaryServerPanicsInterceptor(logger, envBox.Config.ServiceName),
 	}
 }
