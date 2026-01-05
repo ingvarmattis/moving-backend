@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -13,6 +14,9 @@ var ErrNotFound = errors.New("not found")
 
 type Postgres struct {
 	pool *pgxpool.Pool
+
+	reviews []*Review
+	mutex   sync.RWMutex
 }
 
 func NewPostgres(pool *pgxpool.Pool) *Postgres {
@@ -20,6 +24,13 @@ func NewPostgres(pool *pgxpool.Pool) *Postgres {
 }
 
 func (p *Postgres) Reviews(ctx context.Context) ([]*Review, error) {
+	p.mutex.RLock()
+	if p.reviews != nil {
+		defer p.mutex.RUnlock()
+		return p.reviews, nil
+	}
+	p.mutex.RUnlock()
+
 	query := `
 select
 	id, name, rate, photo_url, text, review_url, created_at, updated_at
@@ -55,6 +66,10 @@ order by id
 	if len(reviews) == 0 {
 		return nil, ErrNotFound
 	}
+
+	p.mutex.Lock()
+	p.reviews = reviews
+	p.mutex.Unlock()
 
 	return reviews, nil
 }

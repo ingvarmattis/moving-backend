@@ -2,6 +2,9 @@ begin;
 
 create schema if not exists moving;
 
+grant connect on database moving to "moving-r";
+grant usage   on schema   moving to "moving-r";
+
 create type moving.property_size_enum as enum (
     'unknown',
     'studio',
@@ -34,6 +37,9 @@ create table if not exists moving.orders (
     created_at      timestamp,
     updated_at      timestamp
 );
+
+grant insert, select, update on table    moving.orders        to "moving-r";
+grant usage,  select         on sequence moving.orders_id_seq to "moving-r";
 
 create index if not exists idx_moving_requests_email     on moving.orders (email);
 create index if not exists idx_moving_requests_phone     on moving.orders (phone);

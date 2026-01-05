@@ -11,4 +11,7 @@ create table if not exists moving.reviews (
     updated_at  timestamp     not null  default now()
 );
 
+grant select on table    moving.reviews        to "moving-r";
+grant select on sequence moving.reviews_id_seq to "moving-r";
+
 end;
