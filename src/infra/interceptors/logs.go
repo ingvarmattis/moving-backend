@@ -7,6 +7,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
@@ -20,8 +21,18 @@ func UnaryServerLogInterceptor(logger *zap.Logger, debugMode bool) grpc.UnarySer
 
 		executionDuration := time.Since(startTime)
 
+		var protocol string
+		if md, ok := metadata.FromIncomingContext(ctx); ok {
+			if len(md.Get("grpcgateway-user-agent")) > 0 {
+				protocol = "http"
+			} else {
+				protocol = "grpc"
+			}
+		}
+
 		fields := []zap.Field{
 			zap.String("method", info.FullMethod),
+			zap.String("protocol", protocol),
 			zap.Duration("duration", executionDuration),
 			zap.String("status", status.Code(err).String()),
 		}
@@ -34,7 +45,7 @@ func UnaryServerLogInterceptor(logger *zap.Logger, debugMode bool) grpc.UnarySer
 			fields = append(fields, zap.Any("request", req), zap.Any("response", resp))
 		}
 
-		logger.Info("incoming grpc request", fields...)
+		logger.Info("incoming request", fields...)
 
 		return resp, err
 	}

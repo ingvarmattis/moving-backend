@@ -39,7 +39,7 @@ func NewResources(envBox *Env) *Resources {
 }
 
 func provideUnaryGRPCInterceptors(envBox *Env) []grpc.UnaryServerInterceptor {
-	logger := envBox.Logger.With(zap.String("rpc", "grpc"), zap.String("type", "unary"))
+	logger := envBox.Logger.With(zap.String("type", "unary"))
 
 	return []grpc.UnaryServerInterceptor{
 		interceptors.UnaryServerMetricsInterceptor(envBox.Config.MetricsConfig.Enabled, envBox.Config.ServiceName),
