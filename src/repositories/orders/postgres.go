@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -61,16 +62,48 @@ returning id, name, email, phone, move_date, move_from, move_to,
 	return &order, nil
 }
 
-func (p *Postgres) Orders(ctx context.Context) ([]*Order, error) {
-	query := `
-select
-	id, name, email, phone, move_date, move_from, move_to,
-	property_size, status, additional_info, created_at, updated_at
-from moving.orders
-order by created_at desc
-`
+func (p *Postgres) Orders(ctx context.Context, filter *Filter) ([]*Order, error) {
+	qb := squirrel.Select(
+		"id", "name", "email", "phone", "move_date", "move_from", "move_to",
+		"property_size", "status", "additional_info", "created_at", "updated_at",
+	).
+		From("moving.orders").
+		PlaceholderFormat(squirrel.Dollar)
 
-	rows, err := p.pool.Query(ctx, query)
+	if filter != nil {
+		if filter.OrderStatus != nil {
+			qb = qb.Where(squirrel.Eq{"status": filter.OrderStatus.String()})
+		}
+
+		if filter.PropertySize != nil {
+			qb = qb.Where(squirrel.Eq{"property_size": filter.PropertySize.String()})
+		}
+
+		if filter.CreatedFrom != nil {
+			qb = qb.Where(squirrel.GtOrEq{"created_at": *filter.CreatedFrom})
+		}
+
+		if filter.CreatedTo != nil {
+			qb = qb.Where(squirrel.LtOrEq{"created_at": *filter.CreatedTo})
+		}
+
+		if filter.MoveDateFrom != nil {
+			qb = qb.Where(squirrel.GtOrEq{"move_date": *filter.MoveDateFrom})
+		}
+
+		if filter.MoveDateTo != nil {
+			qb = qb.Where(squirrel.LtOrEq{"move_date": *filter.MoveDateTo})
+		}
+	}
+
+	qb = qb.OrderBy("created_at desc")
+
+	query, args, err := qb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build query | %w", err)
+	}
+
+	rows, err := p.pool.Query(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query orders | %w", err)
 	}
@@ -220,4 +253,13 @@ type UpdateOrderRequest struct {
 	MoveFrom       *string
 	MoveTo         *string
 	AdditionalInfo *string
+}
+
+type Filter struct {
+	OrderStatus  *OrderStatus
+	PropertySize *PropertySize
+	CreatedFrom  *time.Time
+	CreatedTo    *time.Time
+	MoveDateFrom *time.Time
+	MoveDateTo   *time.Time
 }

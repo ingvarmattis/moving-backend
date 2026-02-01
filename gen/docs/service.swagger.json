@@ -67,6 +67,66 @@
             }
           }
         },
+        "parameters": [
+          {
+            "name": "Filter.OrderStatus",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "ORDER_STATUS_UNKNOWN",
+              "ORDER_STATUS_CREATED",
+              "ORDER_STATUS_REJECTED",
+              "ORDER_STATUS_IN_PROGRESS",
+              "ORDER_STATUS_DONE"
+            ],
+            "default": "ORDER_STATUS_UNKNOWN"
+          },
+          {
+            "name": "Filter.PropertySize",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "PROPERTY_SIZE_UNKNOWN",
+              "PROPERTY_SIZE_STUDIO",
+              "PROPERTY_SIZE_1_BEDROOM",
+              "PROPERTY_SIZE_2_BEDROOMS",
+              "PROPERTY_SIZE_3_BEDROOMS",
+              "PROPERTY_SIZE_4_PLUS_BEDROOMS",
+              "PROPERTY_SIZE_COMMERCIAL"
+            ],
+            "default": "PROPERTY_SIZE_UNKNOWN"
+          },
+          {
+            "name": "Filter.CreatedFrom",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "Filter.CreatedTo",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "Filter.MoveDateFrom",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "Filter.MoveDateTo",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          }
+        ],
         "tags": [
           "OrdersService"
         ]
@@ -195,6 +255,14 @@
         },
         "AdditionalInfo": {
           "type": "string"
+        },
+        "CreatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "UpdatedAt": {
+          "type": "string",
+          "format": "date-time"
         }
       }
     },
@@ -261,6 +329,33 @@
       "properties": {
         "Order": {
           "$ref": "#/definitions/movingv1Order"
+        }
+      }
+    },
+    "v1Filter": {
+      "type": "object",
+      "properties": {
+        "OrderStatus": {
+          "$ref": "#/definitions/v1OrderStatus"
+        },
+        "PropertySize": {
+          "$ref": "#/definitions/v1PropertySize"
+        },
+        "CreatedFrom": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "CreatedTo": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "MoveDateFrom": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "MoveDateTo": {
+          "type": "string",
+          "format": "date-time"
         }
       }
     },

@@ -45,11 +45,62 @@ func (s *Handlers) CreateOrder(ctx context.Context, req *CreateOrderRequest) (*O
 		MoveFrom:       order.MoveFrom,
 		MoveTo:         order.MoveTo,
 		AdditionalInfo: order.AdditionalInfo,
+		CreatedAt:      order.CreatedAt,
+		UpdatedAt:      order.UpdatedAt,
 	}, nil
 }
 
-func (s *Handlers) Orders(ctx context.Context) ([]*Order, error) {
-	repoOrders, err := s.OrdersService.Orders(ctx)
+func normalizeFilter(filter *Filter) *orderssvc.Filter {
+	if filter == nil {
+		return nil
+	}
+
+	var createdFrom, createdTo, moveDateFrom, moveDateTo *time.Time
+	if filter.CreatedFrom != nil && !filter.CreatedFrom.IsZero() {
+		createdFrom = filter.CreatedFrom
+	}
+	if filter.CreatedTo != nil && !filter.CreatedTo.IsZero() {
+		createdTo = filter.CreatedTo
+	}
+	if filter.MoveDateFrom != nil && !filter.MoveDateFrom.IsZero() {
+		moveDateFrom = filter.MoveDateFrom
+	}
+	if filter.MoveDateTo != nil && !filter.MoveDateTo.IsZero() {
+		moveDateTo = filter.MoveDateTo
+	}
+
+	var orderStatus *orderssvc.OrderStatus
+	if filter.OrderStatus != nil {
+		os := orderssvc.OrderStatus(*filter.OrderStatus)
+		orderStatus = &os
+	}
+
+	var propertySize *orderssvc.PropertySize
+	if filter.PropertySize != nil {
+		ps := orderssvc.PropertySize(*filter.PropertySize)
+		propertySize = &ps
+	}
+
+	// Check if all fields are empty
+	if orderStatus == nil && propertySize == nil && createdFrom == nil &&
+		createdTo == nil && moveDateFrom == nil && moveDateTo == nil {
+		return nil
+	}
+
+	return &orderssvc.Filter{
+		OrderStatus:  orderStatus,
+		PropertySize: propertySize,
+		CreatedFrom:  createdFrom,
+		CreatedTo:    createdTo,
+		MoveDateFrom: moveDateFrom,
+		MoveDateTo:   moveDateTo,
+	}
+}
+
+func (s *Handlers) Orders(ctx context.Context, filter *Filter) ([]*Order, error) {
+	svcFilter := normalizeFilter(filter)
+
+	repoOrders, err := s.OrdersService.Orders(ctx, svcFilter)
 	if err != nil {
 		if errors.Is(err, orderssvc.ErrNotFound) {
 			return nil, ErrNotFound
@@ -72,6 +123,8 @@ func (s *Handlers) Orders(ctx context.Context) ([]*Order, error) {
 			MoveFrom:       order.MoveFrom,
 			MoveTo:         order.MoveTo,
 			AdditionalInfo: order.AdditionalInfo,
+			CreatedAt:      order.CreatedAt,
+			UpdatedAt:      order.UpdatedAt,
 		})
 	}
 
@@ -103,6 +156,8 @@ func (s *Handlers) OrderByID(ctx context.Context, id uint64) (*Order, error) {
 		MoveFrom:       order.MoveFrom,
 		MoveTo:         order.MoveTo,
 		AdditionalInfo: order.AdditionalInfo,
+		CreatedAt:      order.CreatedAt,
+		UpdatedAt:      order.UpdatedAt,
 	}, nil
 }
 
@@ -177,6 +232,8 @@ type Order struct {
 	MoveFrom       string
 	MoveTo         string
 	AdditionalInfo *string
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
 }
 
 type UpdateOrderRequest struct {
@@ -190,4 +247,13 @@ type UpdateOrderRequest struct {
 	MoveFrom       *string
 	MoveTo         *string
 	AdditionalInfo *string
+}
+
+type Filter struct {
+	OrderStatus  *OrderStatus
+	PropertySize *PropertySize
+	CreatedFrom  *time.Time
+	CreatedTo    *time.Time
+	MoveDateFrom *time.Time
+	MoveDateTo   *time.Time
 }

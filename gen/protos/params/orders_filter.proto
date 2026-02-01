@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package ingvarmattis.services.moving.v1;
+
+option go_package = "./gen/servergrpc/moving;servergrpc";
+
+import "params/order_status.proto";
+import "params/property_size.proto";
+import "google/protobuf/timestamp.proto";
+
+message Filter {
+  OrderStatus OrderStatus = 1;
+  PropertySize PropertySize = 2;
+  google.protobuf.Timestamp CreatedFrom = 3;
+  google.protobuf.Timestamp CreatedTo = 4;
+  google.protobuf.Timestamp MoveDateFrom = 5;
+  google.protobuf.Timestamp MoveDateTo = 6;
+}

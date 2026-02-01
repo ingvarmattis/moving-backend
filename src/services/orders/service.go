@@ -16,7 +16,7 @@ var ErrNotFound = errors.New("not found")
 //go:generate mockgen -source=service.go -destination=mocks/mocks.go -package=mocks
 type ordersStorage interface {
 	CreateOrder(ctx context.Context, req *repo.CreateOrderRequest) (*repo.Order, error)
-	Orders(ctx context.Context) ([]*repo.Order, error)
+	Orders(ctx context.Context, filter *repo.Filter) ([]*repo.Order, error)
 	OrderByID(ctx context.Context, id uint64) (*repo.Order, error)
 	UpdateOrder(ctx context.Context, req *repo.UpdateOrderRequest) error
 }
@@ -57,11 +57,61 @@ func (s *Service) CreateOrder(ctx context.Context, req *CreateOrderRequest) (*Or
 		MoveFrom:       order.MoveFrom,
 		MoveTo:         order.MoveTo,
 		AdditionalInfo: order.AdditionalInfo,
+		CreatedAt:      order.CreatedAt,
+		UpdatedAt:      order.UpdatedAt,
 	}, nil
 }
 
-func (s *Service) Orders(ctx context.Context) ([]*Order, error) {
-	repoOrders, err := s.ordersStorage.Orders(ctx)
+func normalizeFilter(filter *Filter) *repo.Filter {
+	if filter == nil {
+		return nil
+	}
+
+	var createdFrom, createdTo, moveDateFrom, moveDateTo *time.Time
+	if filter.CreatedFrom != nil && !filter.CreatedFrom.IsZero() {
+		createdFrom = filter.CreatedFrom
+	}
+	if filter.CreatedTo != nil && !filter.CreatedTo.IsZero() {
+		createdTo = filter.CreatedTo
+	}
+	if filter.MoveDateFrom != nil && !filter.MoveDateFrom.IsZero() {
+		moveDateFrom = filter.MoveDateFrom
+	}
+	if filter.MoveDateTo != nil && !filter.MoveDateTo.IsZero() {
+		moveDateTo = filter.MoveDateTo
+	}
+
+	var orderStatus *repo.OrderStatus
+	if filter.OrderStatus != nil {
+		os := repo.OrderStatus(*filter.OrderStatus)
+		orderStatus = &os
+	}
+
+	var propertySize *repo.PropertySize
+	if filter.PropertySize != nil {
+		ps := repo.PropertySize(*filter.PropertySize)
+		propertySize = &ps
+	}
+
+	if orderStatus == nil && propertySize == nil && createdFrom == nil &&
+		createdTo == nil && moveDateFrom == nil && moveDateTo == nil {
+		return nil
+	}
+
+	return &repo.Filter{
+		OrderStatus:  orderStatus,
+		PropertySize: propertySize,
+		CreatedFrom:  createdFrom,
+		CreatedTo:    createdTo,
+		MoveDateFrom: moveDateFrom,
+		MoveDateTo:   moveDateTo,
+	}
+}
+
+func (s *Service) Orders(ctx context.Context, filter *Filter) ([]*Order, error) {
+	repoFilter := normalizeFilter(filter)
+
+	repoOrders, err := s.ordersStorage.Orders(ctx, repoFilter)
 	if err != nil {
 		if errors.Is(err, repo.ErrNotFound) {
 			return nil, ErrNotFound
@@ -84,6 +134,8 @@ func (s *Service) Orders(ctx context.Context) ([]*Order, error) {
 			MoveFrom:       repoOrder.MoveFrom,
 			MoveTo:         repoOrder.MoveTo,
 			AdditionalInfo: repoOrder.AdditionalInfo,
+			CreatedAt:      repoOrder.CreatedAt,
+			UpdatedAt:      repoOrder.UpdatedAt,
 		})
 	}
 
@@ -111,6 +163,8 @@ func (s *Service) OrderByID(ctx context.Context, id uint64) (*Order, error) {
 		MoveFrom:       order.MoveFrom,
 		MoveTo:         order.MoveTo,
 		AdditionalInfo: order.AdditionalInfo,
+		CreatedAt:      order.CreatedAt,
+		UpdatedAt:      order.UpdatedAt,
 	}, nil
 }
 
@@ -185,6 +239,8 @@ type Order struct {
 	MoveFrom       string
 	MoveTo         string
 	AdditionalInfo *string
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
 }
 
 type UpdateOrderRequest struct {
@@ -198,4 +254,13 @@ type UpdateOrderRequest struct {
 	MoveFrom       *string
 	MoveTo         *string
 	AdditionalInfo *string
+}
+
+type Filter struct {
+	OrderStatus  *OrderStatus
+	PropertySize *PropertySize
+	CreatedFrom  *time.Time
+	CreatedTo    *time.Time
+	MoveDateFrom *time.Time
+	MoveDateTo   *time.Time
 }

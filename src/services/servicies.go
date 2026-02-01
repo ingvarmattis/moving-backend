@@ -17,7 +17,7 @@ type ReviewsHandlers struct {
 
 type OrdersService interface {
 	CreateOrder(ctx context.Context, req *orders.CreateOrderRequest) (*orders.Order, error)
-	Orders(ctx context.Context) ([]*orders.Order, error)
+	Orders(ctx context.Context, filter *orders.Filter) ([]*orders.Order, error)
 	OrderByID(ctx context.Context, id uint64) (*orders.Order, error)
 	UpdateOrder(ctx context.Context, req *orders.UpdateOrderRequest) error
 }

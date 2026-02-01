@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -37,7 +38,7 @@ var (
 
 type OrdersGRPCHandlers interface {
 	CreateOrder(ctx context.Context, req *orders.CreateOrderRequest) (*orders.Order, error)
-	Orders(ctx context.Context) ([]*orders.Order, error)
+	Orders(ctx context.Context, req *orders.Filter) ([]*orders.Order, error)
 	OrderByID(ctx context.Context, id uint64) (*orders.Order, error)
 	UpdateOrder(ctx context.Context, req *orders.UpdateOrderRequest) error
 }
@@ -246,11 +247,73 @@ func (s *Server) CreateOrder(ctx context.Context, req *rpc.CreateOrderRequest) (
 		MoveFrom:       &order.MoveFrom,
 		MoveTo:         &order.MoveTo,
 		AdditionalInfo: order.AdditionalInfo,
+		CreatedAt:      timestamppb.New(order.CreatedAt),
+		UpdatedAt:      timestamppb.New(order.UpdatedAt),
 	}}, nil
 }
 
-func (s *Server) Orders(ctx context.Context, _ *emptypb.Empty) (*rpc.OrdersResponse, error) {
-	rpcOrders, err := s.OrdersGRPCHandlers.Orders(ctx)
+func (s *Server) Orders(ctx context.Context, req *rpc.OrdersRequest) (*rpc.OrdersResponse, error) {
+	reqFilter := req.GetFilter()
+
+	var filter *orders.Filter
+	if reqFilter != nil {
+		var orderStatus *orders.OrderStatus
+		if os := reqFilter.GetOrderStatus(); os != rpc.OrderStatus_ORDER_STATUS_UNKNOWN {
+			oss := orders.OrderStatus(os)
+			orderStatus = &oss
+		}
+
+		var propertySize *orders.PropertySize
+		if ps := reqFilter.GetPropertySize(); ps != rpc.PropertySize_PROPERTY_SIZE_UNKNOWN {
+			pss := orders.PropertySize(ps)
+			propertySize = &pss
+		}
+
+		var createdFrom *time.Time
+		if ts := reqFilter.GetCreatedFrom(); ts != nil {
+			if t := ts.AsTime(); !t.IsZero() {
+				createdFrom = &t
+			}
+		}
+
+		var createdTo *time.Time
+		if ts := reqFilter.GetCreatedTo(); ts != nil {
+			if t := ts.AsTime(); !t.IsZero() {
+				createdTo = &t
+			}
+		}
+
+		var moveDateFrom *time.Time
+		if ts := reqFilter.GetMoveDateFrom(); ts != nil {
+			if t := ts.AsTime(); !t.IsZero() {
+				moveDateFrom = &t
+			}
+		}
+
+		var moveDateTo *time.Time
+		if ts := reqFilter.GetMoveDateTo(); ts != nil {
+			if t := ts.AsTime(); !t.IsZero() {
+				moveDateTo = &t
+			}
+		}
+
+		// Check if all fields are empty
+		if orderStatus == nil && propertySize == nil && createdFrom == nil &&
+			createdTo == nil && moveDateFrom == nil && moveDateTo == nil {
+			filter = nil
+		} else {
+			filter = &orders.Filter{
+				OrderStatus:  orderStatus,
+				PropertySize: propertySize,
+				CreatedFrom:  createdFrom,
+				CreatedTo:    createdTo,
+				MoveDateFrom: moveDateFrom,
+				MoveDateTo:   moveDateTo,
+			}
+		}
+	}
+
+	rpcOrders, err := s.OrdersGRPCHandlers.Orders(ctx, filter)
 	if err != nil {
 		if errors.Is(err, orders.ErrNotFound) {
 			return nil, GRPCNotFoundError(err, nil)
@@ -275,6 +338,8 @@ func (s *Server) Orders(ctx context.Context, _ *emptypb.Empty) (*rpc.OrdersRespo
 			MoveFrom:       &order.MoveFrom,
 			MoveTo:         &order.MoveTo,
 			AdditionalInfo: order.AdditionalInfo,
+			CreatedAt:      timestamppb.New(order.CreatedAt),
+			UpdatedAt:      timestamppb.New(order.UpdatedAt),
 		})
 	}
 
@@ -305,6 +370,8 @@ func (s *Server) Order(ctx context.Context, req *rpc.OrderRequest) (*rpc.OrderRe
 		MoveFrom:       &rpcOrder.MoveFrom,
 		MoveTo:         &rpcOrder.MoveTo,
 		AdditionalInfo: rpcOrder.AdditionalInfo,
+		CreatedAt:      timestamppb.New(rpcOrder.CreatedAt),
+		UpdatedAt:      timestamppb.New(rpcOrder.UpdatedAt),
 	}}, nil
 }
 

@@ -19,6 +19,8 @@ message Order {
   optional string MoveFrom = 8;
   optional string MoveTo = 9;
   optional string AdditionalInfo = 10;
+  optional google.protobuf.Timestamp CreatedAt = 11;
+  optional google.protobuf.Timestamp UpdatedAt = 12;
 }
 
 message OrderRequest {

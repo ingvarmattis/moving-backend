@@ -20,7 +20,7 @@ service OrdersService {
     };
   }
 
-  rpc Orders(google.protobuf.Empty) returns (OrdersResponse) {
+  rpc Orders(OrdersRequest) returns (OrdersResponse) {
     option (google.api.http) = {
       get: "/v1/orders"
     };

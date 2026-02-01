@@ -5,6 +5,11 @@ package ingvarmattis.services.moving.v1;
 option go_package = "./gen/servergrpc/moving;servergrpc";
 
 import "params/order.proto";
+import "params/orders_filter.proto";
+
+message OrdersRequest {
+  Filter Filter = 1;
+}
 
 message OrdersResponse {
   repeated Order Orders = 1;
