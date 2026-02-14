@@ -30,7 +30,7 @@ func main() {
 
 	resources := box.NewResources(envBox)
 
-	grpcCompetitorsServer := server.NewServer(
+	grpcServer := server.NewServer(
 		serverCTX,
 		envBox.Config.GRPCServerListenPort,
 		&server.NewServerOptions{
@@ -55,7 +55,7 @@ func main() {
 	// working functions
 	workingFunctions := []func() error{
 		func() error {
-			if grpcServerErr := grpcCompetitorsServer.Serve(
+			if grpcServerErr := grpcServer.Serve(
 				envBox.Config.ServiceName, &envBox.Config.GRPCServerListenPort,
 			); grpcServerErr != nil {
 				return fmt.Errorf("cannot start grpc server | %w", grpcServerErr)
@@ -64,7 +64,7 @@ func main() {
 			return nil
 		},
 		func() error {
-			if httpServerErr := grpcCompetitorsServer.ServeHTTP(
+			if httpServerErr := grpcServer.ServeHTTP(
 				&envBox.Config.HTTPServerListenPort,
 			); httpServerErr != nil && !errors.Is(httpServerErr, http.ErrServerClosed) {
 				return fmt.Errorf("cannot start http server | %w", httpServerErr)
@@ -97,7 +97,7 @@ func main() {
 
 	gracefullShutdown(
 		envBox.Logger,
-		grpcCompetitorsServer, envBox.PGXPool,
+		grpcServer, envBox.PGXPool,
 		metricsServer,
 		envBox.TraceProvider,
 	)
