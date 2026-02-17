@@ -51,7 +51,13 @@ func NewTelegramBot(
 		allowedChatIDs: allowedChatIDs,
 	}
 
+	tBot.Handle("/start", bot.onStart)
+
 	return bot, nil
+}
+
+func (b *TelegramBot) onStart(ctx telebot.Context) error {
+	return ctx.Send("You have subscribed to updates.")
 }
 
 func (b *TelegramBot) Start() {
