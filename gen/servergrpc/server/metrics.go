@@ -8,9 +8,10 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
-
-	"github.com/ingvarmattis/moving/src/infra/box"
 )
+
+// NotOperational is the name used for disabled/noop metrics server.
+const NotOperational = "noop"
 
 type MetricsServer struct {
 	*http.Server
@@ -31,7 +32,7 @@ func (m *MetricsServer) Name() string {
 func NewMetricsServer(enabled bool, logger *zap.Logger, port int) *MetricsServer {
 	if !enabled {
 		return &MetricsServer{
-			name:   box.NotOperational,
+			name:   NotOperational,
 			Server: nil,
 			port:   port,
 			logger: logger,

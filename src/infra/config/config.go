@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/kelseyhightower/envconfig"
 )
@@ -20,6 +21,7 @@ type Config struct {
 	MetricsConfig  MetricsConfig
 	TracingConfig  TracingConfig
 	AuthConfig     AuthConfig
+	TelegramConfig TelegramConfig
 }
 
 func FromEnv() (*Config, error) {
@@ -54,4 +56,11 @@ type TracingConfig struct {
 type AuthConfig struct {
 	ClientTokens []string `envconfig:"MOVING_SERVICE_CLIENT_AUTH_TOKENS" required:"true"`
 	AdminTokens  []string `envconfig:"MOVING_SERVICE_ADMIN_AUTH_TOKENS" required:"true"`
+}
+
+type TelegramConfig struct {
+	Enabled        bool          `envconfig:"MOVING_SERVICE_TELEGRAM_ENABLED" required:"true"`
+	Token          string        `envconfig:"MOVING_SERVICE_TELEGRAM_TOKEN" required:"true"`
+	Timeout        time.Duration `envconfig:"MOVING_SERVICE_TELEGRAM_TIMEOUT" required:"true"`
+	AllowedChatIDs []int64       `envconfig:"MOVING_SERVICE_TELEGRAM_ALLOWED_CHAT_IDS" required:"true"`
 }

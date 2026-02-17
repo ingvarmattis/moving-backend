@@ -14,10 +14,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/ingvarmattis/moving/gen/servergrpc/server"
 	"github.com/ingvarmattis/moving/src/infra/box"
-	"github.com/ingvarmattis/moving/src/transport/orders"
-	"github.com/ingvarmattis/moving/src/transport/reviews"
 )
 
 func main() {
@@ -28,34 +25,15 @@ func main() {
 		panic(err)
 	}
 
-	resources := box.NewResources(envBox)
-
-	grpcServer := server.NewServer(
-		serverCTX,
-		envBox.Config.GRPCServerListenPort,
-		&server.NewServerOptions{
-			ServiceName: envBox.Config.ServiceName,
-			OrdersGRPCHandlers: &orders.Handlers{
-				OrdersService: resources.OrdersService,
-			},
-			ReviewsGRPCHandlers: &reviews.Handlers{
-				ReviewsService: resources.ReviewsService,
-			},
-			Validator:          resources.Validator,
-			Logger:             envBox.Logger,
-			UnaryInterceptors:  resources.UnaryGRPCServerInterceptors,
-			StreamInterceptors: resources.StreamGRPCServerInterceptors,
-		},
-	)
-
-	metricsServer := server.NewMetricsServer(
-		envBox.Config.MetricsConfig.Enabled, envBox.Logger, envBox.Config.MetricsConfig.Port,
-	)
+	resources, err := box.NewResources(serverCTX, envBox)
+	if err != nil {
+		panic(err)
+	}
 
 	// working functions
 	workingFunctions := []func() error{
 		func() error {
-			if grpcServerErr := grpcServer.Serve(
+			if grpcServerErr := resources.GRPCServer.Serve(
 				envBox.Config.ServiceName, &envBox.Config.GRPCServerListenPort,
 			); grpcServerErr != nil {
 				return fmt.Errorf("cannot start grpc server | %w", grpcServerErr)
@@ -64,7 +42,7 @@ func main() {
 			return nil
 		},
 		func() error {
-			if httpServerErr := grpcServer.ServeHTTP(
+			if httpServerErr := resources.GRPCServer.ServeHTTP(
 				&envBox.Config.HTTPServerListenPort,
 			); httpServerErr != nil && !errors.Is(httpServerErr, http.ErrServerClosed) {
 				return fmt.Errorf("cannot start http server | %w", httpServerErr)
@@ -73,11 +51,15 @@ func main() {
 			return nil
 		},
 		func() error {
-			if metricsServer.Name() == box.NotOperational {
+			resources.TelegramBot.Start()
+			return nil
+		},
+		func() error {
+			if resources.MetricsServer.Name() == box.NotOperational {
 				return nil
 			}
 
-			if httpMetricsErr := metricsServer.ListenAndServe(); httpMetricsErr != nil &&
+			if httpMetricsErr := resources.MetricsServer.ListenAndServe(); httpMetricsErr != nil &&
 				!errors.Is(httpMetricsErr, http.ErrServerClosed) {
 				return fmt.Errorf("cannot start http metrics server | %w", httpMetricsErr)
 			}
@@ -97,8 +79,8 @@ func main() {
 
 	gracefullShutdown(
 		envBox.Logger,
-		grpcServer, envBox.PGXPool,
-		metricsServer,
+		resources.GRPCServer, envBox.PGXPool, resources.TelegramBot,
+		resources.MetricsServer,
 		envBox.TraceProvider,
 	)
 
@@ -122,7 +104,7 @@ type (
 
 func gracefullShutdown(
 	logger *zap.Logger,
-	serverGRPC, pgxPool closer,
+	serverGRPC, pgxPool, telegramBot closer,
 	metricsServerHTTP metricsCloser,
 	traceProvider shutdowner,
 ) {
@@ -149,6 +131,10 @@ func gracefullShutdown(
 			if err := metricsServerHTTP.Close(); err != nil {
 				logger.Error("failed to close metrics server", zap.Error(err))
 			}
+		},
+		func() {
+			defer shutdownWG.Done()
+			telegramBot.Close()
 		},
 		func() {
 			defer shutdownWG.Done()

@@ -58,6 +58,8 @@ type Server struct {
 	OrdersGRPCHandlers  OrdersGRPCHandlers
 	ReviewsGRPCHandlers ReviewsGRPCHandlers
 
+	NewOrderNotifier func(order *orders.Order)
+
 	Validator *validator.Validate
 	Logger    *zap.Logger
 
@@ -154,6 +156,8 @@ type NewServerOptions struct {
 	OrdersGRPCHandlers  OrdersGRPCHandlers
 	ReviewsGRPCHandlers ReviewsGRPCHandlers
 
+	NewOrderNotifier func(order *orders.Order)
+
 	Logger    *zap.Logger
 	Validator *validator.Validate
 
@@ -186,6 +190,8 @@ func NewServer(ctx context.Context, grpcPort int, opts *NewServerOptions) *Serve
 
 		OrdersGRPCHandlers:  opts.OrdersGRPCHandlers,
 		ReviewsGRPCHandlers: opts.ReviewsGRPCHandlers,
+
+		NewOrderNotifier: opts.NewOrderNotifier,
 
 		Validator: opts.Validator,
 		Logger:    opts.Logger,
@@ -234,6 +240,10 @@ func (s *Server) CreateOrder(ctx context.Context, req *rpc.CreateOrderRequest) (
 	order, err := s.OrdersGRPCHandlers.CreateOrder(ctx, rpcReq)
 	if err != nil {
 		return nil, GRPCUnknownError(err, nil)
+	}
+
+	if s.NewOrderNotifier != nil {
+		s.NewOrderNotifier(order)
 	}
 
 	return &rpc.CreateOrderResponse{Order: &rpc.Order{
