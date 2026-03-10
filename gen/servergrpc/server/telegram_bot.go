@@ -51,9 +51,38 @@ func NewTelegramBot(
 		allowedChatIDs: allowedChatIDs,
 	}
 
+	tBot.Use(bot.loggingMiddleware())
+
 	tBot.Handle("/start", bot.onStart)
 
 	return bot, nil
+}
+
+func (b *TelegramBot) loggingMiddleware() func(telebot.HandlerFunc) telebot.HandlerFunc {
+	return func(next telebot.HandlerFunc) telebot.HandlerFunc {
+		return func(c telebot.Context) error {
+			start := time.Now()
+			err := next(c)
+			duration := time.Since(start)
+
+			chatID := c.Chat().ID
+			var command string
+			if c.Message() != nil && c.Message().Text != "" && c.Message().Text[0] == '/' {
+				parts := strings.Fields(c.Message().Text)
+				if len(parts) > 0 {
+					command = parts[0]
+				}
+			}
+
+			b.logger.Info("telegram request",
+				zap.Int64("chat_id", chatID),
+				zap.Duration("duration", duration),
+				zap.String("command", command),
+				zap.Time("time", start),
+			)
+			return err
+		}
+	}
 }
 
 func (b *TelegramBot) onStart(ctx telebot.Context) error {
