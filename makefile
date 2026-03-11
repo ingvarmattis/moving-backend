@@ -1,4 +1,4 @@
-#Prepare template
+#Prepare template test
 prepare-template:
 	rm -r ./.git
 	./scripts/replace_service.sh ./go-microservice-template old-service new-service
